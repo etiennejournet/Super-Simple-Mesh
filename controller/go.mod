@@ -1,4 +1,4 @@
-module github.com/autosidecar
+module github.com/ssm
 
 go 1.16
 
