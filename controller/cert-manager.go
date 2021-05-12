@@ -93,7 +93,7 @@ func (mutation *certManagerMutationConfig) certificateRequest() (err error) {
 	return
 }
 
-func (mutation *certManagerMutationConfig) certManagerMutation() (patch []patchValue) {
+func (mutation *certManagerMutationConfig) certManagerMutation() []patchValue {
 	log.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
 	err := mutation.certificateRequest()
 	if err != nil {
@@ -158,10 +158,9 @@ func (mutation *certManagerMutationConfig) certManagerMutation() (patch []patchV
 		}
 	}
 
-	patch = append(patch, sidecarPatch)
-	patch = append(patch, volumePatch)
-	patch = append(patch, initPatch)
-	patch = append(patch, mountPatch)
-
-	return
+	return []patchValue{
+    sidecarPatch,
+    volumePatch,
+    initPatch,
+    mountPatch}
 }
