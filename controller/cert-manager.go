@@ -106,7 +106,7 @@ func (mutation *certManagerMutationConfig) certManagerMutation() []patchValue {
 		Path:  "/spec/template/spec/volumes",
 		Value: []v1.Volume{*mutation.Volume},
 	}
-	if len(mutation.PodTemplate.Spec.InitContainers) != 0 {
+	if len(mutation.PodTemplate.Spec.Volumes) != 0 {
 		volumePatch.Value = mutation.Volume
 		for index, volume := range mutation.PodTemplate.Spec.Volumes {
 			if volume.Name == mutation.Volume.Name {
