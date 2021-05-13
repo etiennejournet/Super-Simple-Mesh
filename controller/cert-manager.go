@@ -72,7 +72,7 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	}
 }
 
-func (mutation *certManagerMutationConfig) certificateRequest() (err error) {
+func (mutation *certManagerMutationConfig) createCertificateRequest() (err error) {
 	// We create a new cert
 	clientSet, err := versioned.NewForConfig(mutation.WebHookConfiguration.Client)
 	if err != nil {
@@ -93,9 +93,9 @@ func (mutation *certManagerMutationConfig) certificateRequest() (err error) {
 	return
 }
 
-func (mutation *certManagerMutationConfig) certManagerMutation() []patchValue {
+func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	log.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
-	err := mutation.certificateRequest()
+	err := mutation.createCertificateRequest()
 	if err != nil {
 		log.Print(err)
 	}

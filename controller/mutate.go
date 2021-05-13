@@ -24,7 +24,7 @@ func injectSidecar(admissionReviewBody []byte, wh *webHook) (admissionReview adm
 			admissionReview.Request.Namespace,
 			podTemplate,
 		)
-		patch = mutationConfig.certManagerMutation()
+		patch = mutationConfig.createJSONPatch()
 	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
 		log.Print("Patching demand for autocert received, not implemented yet")
 		//patch = wh.autocertMutation(podTemplate)
