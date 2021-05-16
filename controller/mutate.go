@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+  "errors"
 
 	admission "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -14,8 +15,10 @@ func injectSidecar(admissionReviewBody []byte, wh *webHook) (admissionReview adm
 	patch := []patchValue{}
 	log.Print("Mutation request received for object ", admissionReview.Request.Resource.Resource, " ", admissionReview.Request.Name, " in namespace ", admissionReview.Request.Namespace)
 
-	podTemplate := getPodTemplateFromAdmissionRequest(admissionReview.Request)
-	if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
+	err, podTemplate := getPodTemplateFromAdmissionRequest(admissionReview.Request)
+  if err != nil {
+    log.Print(err)
+  } else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
 		log.Print("Patching demand for cert-manager received")
 
 		mutationConfig := newCertManagerMutationConfig(
@@ -25,41 +28,39 @@ func injectSidecar(admissionReviewBody []byte, wh *webHook) (admissionReview adm
 			podTemplate,
 		)
 		patch = mutationConfig.createJSONPatch()
-	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
-		log.Print("Patching demand for autocert received, not implemented yet")
-		//patch = wh.autocertMutation(podTemplate)
-	}
+  } else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
+	  log.Print("Patching demand for autocert received, not implemented yet")
+	  //patch = wh.autocertMutation(podTemplate)
+  }
 
-	patchByte, _ := json.Marshal(patch)
-	admissionResponse := admission.AdmissionResponse{
+	patchByte, err := json.Marshal(patch)
+  if err != nil {
+    log.Print(err)
+  }
+
+	admissionReview.Response = &admission.AdmissionResponse{
 		UID:     admissionReview.Request.UID,
 		Allowed: true,
 		Patch:   patchByte,
 	}
-	admissionReview.Response = &admissionResponse
 	return
 }
 
-func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionRequest) v1.PodTemplateSpec {
+func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionRequest) (error, v1.PodTemplateSpec) {
 	switch admissionRequest.Resource.Resource {
 	case "deployments":
 		var object appsv1.Deployment
-		if err := json.Unmarshal(admissionRequest.Object.Raw, &object); err != nil {
-			log.Print("Error unmarshaling pod")
-		}
-		return object.Spec.Template
+    err := json.Unmarshal(admissionRequest.Object.Raw, &object)
+		return err, object.Spec.Template
 	case "daemonsets":
 		var object appsv1.DaemonSet
-		if err := json.Unmarshal(admissionRequest.Object.Raw, &object); err != nil {
-			log.Print("Error unmarshaling pod")
-		}
-		return object.Spec.Template
+    err := json.Unmarshal(admissionRequest.Object.Raw, &object)
+		return err, object.Spec.Template
 	case "statefulsets":
 		var object appsv1.StatefulSet
-		if err := json.Unmarshal(admissionRequest.Object.Raw, &object); err != nil {
-			log.Print("Error unmarshaling pod")
-		}
-		return object.Spec.Template
+    err := json.Unmarshal(admissionRequest.Object.Raw, &object)
+		return err, object.Spec.Template
 	}
-	return v1.PodTemplateSpec{}
+  err := errors.New("This object is neither a deployment, a daemonset or a stateful set")
+	return err, v1.PodTemplateSpec{}
 }

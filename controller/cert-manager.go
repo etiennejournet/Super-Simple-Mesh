@@ -72,11 +72,11 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	}
 }
 
-func (mutation *certManagerMutationConfig) createCertificateRequest() (err error) {
+func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	// We create a new cert
 	clientSet, err := versioned.NewForConfig(mutation.WebHookConfiguration.Client)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Get(context.TODO(), mutation.ObjectName, metav1.GetOptions{})
@@ -85,12 +85,12 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() (err error
 	}
 	if existingCert != nil {
 		log.Print("Cert already exists by the same name, patching it")
-      // Find a way of managing this more switfly
+		// Find a way of managing this more switfly
 		clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})
 
-	return
+	return err
 }
 
 func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
@@ -98,6 +98,7 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	err := mutation.createCertificateRequest()
 	if err != nil {
 		log.Print(err)
+		return []patchValue{}
 	}
 
 	// Check if there already is a Volume, adding it as a new json array if there isn't
@@ -159,8 +160,8 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	}
 
 	return []patchValue{
-    sidecarPatch,
-    volumePatch,
-    initPatch,
-    mountPatch}
+		sidecarPatch,
+		volumePatch,
+		initPatch,
+		mountPatch}
 }
