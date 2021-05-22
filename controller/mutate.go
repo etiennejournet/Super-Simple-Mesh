@@ -15,7 +15,7 @@ func injectSidecar(admissionReviewBody []byte, wh *webHook) (admissionReview adm
 	patch := []patchValue{}
 	log.Print("Mutation request received for object ", admissionReview.Request.Resource.Resource, " ", admissionReview.Request.Name, " in namespace ", admissionReview.Request.Namespace)
 
-	err, podTemplate := getPodTemplateFromAdmissionRequest(admissionReview.Request)
+	podTemplate, err := getPodTemplateFromAdmissionRequest(admissionReview.Request)
   if err != nil {
     log.Print(err)
   } else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
@@ -46,21 +46,21 @@ func injectSidecar(admissionReviewBody []byte, wh *webHook) (admissionReview adm
 	return
 }
 
-func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionRequest) (error, v1.PodTemplateSpec) {
+func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionRequest) (v1.PodTemplateSpec, error) {
 	switch admissionRequest.Resource.Resource {
 	case "deployments":
 		var object appsv1.Deployment
     err := json.Unmarshal(admissionRequest.Object.Raw, &object)
-		return err, object.Spec.Template
+		return object.Spec.Template, err
 	case "daemonsets":
 		var object appsv1.DaemonSet
     err := json.Unmarshal(admissionRequest.Object.Raw, &object)
-		return err, object.Spec.Template
+		return object.Spec.Template, err
 	case "statefulsets":
 		var object appsv1.StatefulSet
     err := json.Unmarshal(admissionRequest.Object.Raw, &object)
-		return err, object.Spec.Template
+		return object.Spec.Template, err
 	}
-  err := errors.New("This object is neither a deployment, a daemonset or a stateful set")
-	return err, v1.PodTemplateSpec{}
+  err := errors.New("this object is neither a deployment, a daemonset or a stateful set")
+	return v1.PodTemplateSpec{}, err
 }

@@ -85,7 +85,7 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	}
 	if existingCert != nil {
 		log.Print("Cert already exists by the same name, patching it")
-		// Find a way of managing this more switfly
+    //TODO: Find a way of managing this more switfly
 		clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})
