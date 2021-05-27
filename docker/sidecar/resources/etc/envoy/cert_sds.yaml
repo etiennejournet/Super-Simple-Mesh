@@ -1,8 +1,0 @@
-resources:
-- "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.Secret"
-  name: cert_sds
-  tls_certificate:
-    certificate_chain:
-      filename: "/var/run/autocert.step.sm/site.crt"
-    private_key:
-      filename: "/var/run/autocert.step.sm/site.key"
