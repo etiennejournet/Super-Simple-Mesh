@@ -1,0 +1,6 @@
+inputFiles:
+- /etc/envoy/cert_sds.yaml.tpl
+- /etc/envoy/envoy.yaml.tpl
+outputFiles:
+- /etc/envoy/cert_sds.yaml
+- /etc/envoy/envoy.yaml

@@ -9,22 +9,40 @@ import (
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	restclient "k8s.io/client-go/rest"
 
 	v1 "k8s.io/api/core/v1"
 	"time"
 )
 
 type certManagerMutationConfig struct {
-	ObjectName           string
-	ObjectNamespace      string
-	PodTemplate          *v1.PodTemplateSpec
-	Certificate          *certmanager.Certificate
-	Volume               *v1.Volume
-	VolumeMount          *v1.VolumeMount
-	WebHookConfiguration *webHook
+	ObjectName                 string
+	ObjectNamespace            string
+	PodTemplate                *v1.PodTemplateSpec
+	Certificate                *certmanager.Certificate
+	SidecarConfiguration       *v1.Container
+	InitContainerConfiguration *v1.Container
+	Volume                     *v1.Volume
+	VolumeMount                *v1.VolumeMount
+	KubernetesClient           *restclient.Config
 }
 
 func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) *certManagerMutationConfig {
+	certificatesPath := "/var/run/ssm"
+
+	// Define the ClusterIssuer for cert-manager according to the annotation or default
+	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
+	if caIssuer == "" {
+		caIssuer = "ca-issuer"
+	}
+
+	// Define the Certificate Duration
+	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
+	if certDuration == "" {
+		certDuration = "24h"
+	}
+	certDurationParsed, _ := time.ParseDuration(certDuration)
+
 	return &certManagerMutationConfig{
 		ObjectName:      objectName,
 		ObjectNamespace: objectNamespace,
@@ -36,45 +54,35 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 			Spec: certmanager.CertificateSpec{
 				CommonName: podTemplate.Annotations["cert-manager.ssm.io/service-name"],
 				DNSNames:   []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
-				//TODO : find a way to make this variable
-				Duration: &metav1.Duration{5 * time.Hour},
-				//TODO : find a way to make this variable
-				RenewBefore: &metav1.Duration{4 * time.Hour},
-				SecretName:  wh.Name + "-cert-" + objectName,
+				Duration:   &metav1.Duration{certDurationParsed},
+				SecretName: wh.Name + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
-					//TODO : find a way to make this variable
-					Name: "ca-issuer",
+					Name: caIssuer,
+					// SSM only support one mesh for now
 					Kind: "ClusterIssuer",
 				},
 			},
 		},
+		SidecarConfiguration:       wh.defineSidecar(certificatesPath),
+		InitContainerConfiguration: wh.defineInitContainer(),
 		Volume: &v1.Volume{
 			Name: wh.Name + "-volume",
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
 					SecretName: wh.Name + "-cert-" + objectName,
-					Items: []v1.KeyToPath{
-						// TODO : replace this mapping by a templating in the docker image"
-						{Key: "ca.crt", Path: "root.crt"},
-						{Key: "tls.crt", Path: "site.crt"},
-						{Key: "tls.key", Path: "site.key"},
-					},
 				},
 			},
 		},
 		VolumeMount: &v1.VolumeMount{
-			Name: wh.Name + "-volume",
-			// TODO : replace this hardcoded var
-			MountPath: "/var/run/autocert.step.sm/",
+			Name:      wh.Name + "-volume",
+			MountPath: certificatesPath,
 		},
-		// TODO : inherit only needed fields from WebHook
-		WebHookConfiguration: wh,
+		KubernetesClient: wh.Client,
 	}
 }
 
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
-	// We create a new cert
-	clientSet, err := versioned.NewForConfig(mutation.WebHookConfiguration.Client)
+	clientSet, err := versioned.NewForConfig(mutation.KubernetesClient)
 	if err != nil {
 		log.Print(err)
 	}
@@ -85,7 +93,7 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	}
 	if existingCert != nil {
 		log.Print("Cert already exists by the same name, patching it")
-    //TODO: Find a way of managing this more switfly
+		//TODO: Find a way of managing this more switfly
 		clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})
@@ -94,6 +102,7 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 }
 
 func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
+	// TODO: this function should implement idempotency
 	log.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
 	err := mutation.createCertificateRequest()
 	if err != nil {
@@ -120,16 +129,16 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 		}
 	}
 
-	// Check if there already is an IniContainer , adding it as a new json array if there isn't
+	// Check if there already is an InitContainer , adding it as a new json array if there isn't
 	initPatch := patchValue{
 		Op:    "add",
 		Path:  "/spec/template/spec/initContainers",
-		Value: []v1.Container{*mutation.WebHookConfiguration.InitContainerConfiguration},
+		Value: []v1.Container{*mutation.InitContainerConfiguration},
 	}
 	if len(mutation.PodTemplate.Spec.InitContainers) != 0 {
-		initPatch.Value = mutation.WebHookConfiguration.InitContainerConfiguration
+		initPatch.Value = mutation.InitContainerConfiguration
 		for index, init := range mutation.PodTemplate.Spec.InitContainers {
-			if init.Name == mutation.WebHookConfiguration.InitContainerConfiguration.Name {
+			if init.Name == mutation.InitContainerConfiguration.Name {
 				initPatch.Op = "replace"
 				initPatch.Path = "/spec/template/spec/initContainers/" + strconv.Itoa(index)
 			}
@@ -143,7 +152,7 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	sidecarPatch := patchValue{
 		Op:    "add",
 		Path:  "/spec/template/spec/containers/-",
-		Value: mutation.WebHookConfiguration.SidecarConfiguration,
+		Value: mutation.SidecarConfiguration,
 	}
 	// Lets configure the volumeMount at the same time
 	mountPatch := patchValue{
@@ -152,7 +161,7 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 		Value: []v1.VolumeMount{*mutation.VolumeMount},
 	}
 	for index, sidecar := range mutation.PodTemplate.Spec.Containers {
-		if sidecar.Name == mutation.WebHookConfiguration.SidecarConfiguration.Name {
+		if sidecar.Name == mutation.SidecarConfiguration.Name {
 			sidecarPatch.Op = "replace"
 			sidecarPatch.Path = "/spec/template/spec/containers/" + strconv.Itoa(index)
 			mountPatch.Path = sidecarPatch.Path + "/volumeMounts"

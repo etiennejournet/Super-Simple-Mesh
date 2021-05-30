@@ -3,6 +3,6 @@ resources:
   name: cert_sds
   tls_certificate:
     certificate_chain:
-      filename: "/var/run/autocert.step.sm/site.crt"
+      filename: {{ env.Getenv "CERTIFICATES_PATH" }}/tls.crt
     private_key:
-      filename: "/var/run/autocert.step.sm/site.key"
+      filename: {{ env.Getenv "CERTIFICATES_PATH" }}/tls.key
