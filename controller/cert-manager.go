@@ -28,24 +28,24 @@ type certManagerMutationConfig struct {
 }
 
 func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) *certManagerMutationConfig {
-  // Define CertificatePath according to the annotation or default 
+	// Define CertificatePath according to the annotation or default
 	certificatesPath := podTemplate.Annotations["cert-manager.ssm.io/certificate-path"]
 	if certificatesPath == "" {
 		certificatesPath = "/var/run/ssm"
 	}
 
-  // Define the ClusterIssuer for cert-manager according to the annotation or default
+	// Define the ClusterIssuer for cert-manager according to the annotation or default
 	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
 
-  // Define the Certificate Duration
-  certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
-  if certDuration == "" {
-    certDuration = "24h"
-  }
-  certDurationParsed, _ := time.ParseDuration(certDuration)
+	// Define the Certificate Duration
+	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
+	if certDuration == "" {
+		certDuration = "24h"
+	}
+	certDurationParsed, _ := time.ParseDuration(certDuration)
 
 	return &certManagerMutationConfig{
 		ObjectName:      objectName,
@@ -58,8 +58,8 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 			Spec: certmanager.CertificateSpec{
 				CommonName: podTemplate.Annotations["cert-manager.ssm.io/service-name"],
 				DNSNames:   []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
-				Duration: &metav1.Duration{certDurationParsed},
-				SecretName:  wh.Name + "-cert-" + objectName,
+				Duration:   &metav1.Duration{certDurationParsed},
+				SecretName: wh.Name + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
 					Name: caIssuer,
 					// SSM only support one mesh for now
