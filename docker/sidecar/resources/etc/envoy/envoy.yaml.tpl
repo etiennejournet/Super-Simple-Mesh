@@ -115,5 +115,5 @@ static_resources:
         common_tls_context:
           validation_context:
             trusted_ca:
-              filename: {{ env.Getenv "CERTIFICATES_PATH" "/var/run/ssm" }}/ca.crt
+              filename: {{ env.Getenv "CERTIFICATES_PATH" }}/ca.crt
             match_subject_alt_names:

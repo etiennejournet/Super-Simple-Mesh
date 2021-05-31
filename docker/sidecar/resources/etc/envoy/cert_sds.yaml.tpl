@@ -3,6 +3,6 @@ resources:
   name: cert_sds
   tls_certificate:
     certificate_chain:
-      filename: {{ env.Getenv "CERTIFICATES_PATH" "/var/run/ssm" }}/tls.crt
+      filename: {{ env.Getenv "CERTIFICATES_PATH" }}/tls.crt
     private_key:
-      filename: {{ env.Getenv "CERTIFICATES_PATH" "/var/run/ssm" }}/tls.key
+      filename: {{ env.Getenv "CERTIFICATES_PATH" }}/tls.key

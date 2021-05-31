@@ -28,7 +28,7 @@ type certManagerMutationConfig struct {
 }
 
 func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) *certManagerMutationConfig {
-  certificatesPath := "/var/run/ssm"
+	certificatesPath := "/var/run/ssm"
 
 	// Define the ClusterIssuer for cert-manager according to the annotation or default
 	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
