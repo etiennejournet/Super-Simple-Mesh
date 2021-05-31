@@ -1,7 +1,9 @@
 
 # Super Simple Mesh
 
-A very simple service mesh providing only the mTLS feature in the form of a Mutating Web Hook.
+A very simple service mesh providing only the TLS feature in the form of a Mutating Web Hook.
+Super Simple Mesh is useful for teams who only want to encrypt flows between their containers without bothering with the extra features and complexity a classic Service Mesh brings
+
 
 SSM uses Cert-Manager for delivering certificates. It will request certificates for your workloads based on annotations that you provide.
 
