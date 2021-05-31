@@ -34,7 +34,7 @@ func (wh *webHook) server(w http.ResponseWriter, req *http.Request) {
 
 	case "POST":
 		body, _ := ioutil.ReadAll(req.Body)
-		jsonResponse, _ := json.Marshal(injectSidecar(body, wh))
+		jsonResponse, _ := json.Marshal(parseAndResolveInjectionDemand(body, wh))
 		w.Write(jsonResponse)
 	}
 }

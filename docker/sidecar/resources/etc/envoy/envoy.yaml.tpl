@@ -95,11 +95,6 @@ static_resources:
               name: cert_sds
               sds_config:
                 path: /etc/envoy/cert_sds.yaml
-#            tls_certificates:
-#            - certificate_chain:
-#                filename: "/var/run/autocert.step.sm/site.crt"
-#              private_key:
-#                filename: "/var/run/autocert.step.sm/site.key"
     listener_filters:
     - name: envoy.filters.listener.original_dst
   clusters:
@@ -120,5 +115,5 @@ static_resources:
         common_tls_context:
           validation_context:
             trusted_ca:
-              filename: /var/run/autocert.step.sm/root.crt
+              filename: {{ env.Getenv "CERTIFICATES_PATH" "/var/run/ssm" }}/ca.crt
             match_subject_alt_names:
