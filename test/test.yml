@@ -40,7 +40,7 @@ metadata:
   labels:
     purpose: test2
   annotations:
-    autosidecar.io/enabled: "true"
+    cert-manager.ssm.io/service-name: "test2.default.svc.cluster.local"
 spec:
   containers:
   - name: test
@@ -54,7 +54,7 @@ metadata:
   labels:
     purpose: test
   annotations:
-    autosidecar.io/enabled: "true"
+    cert-manager.ssm.io/service-name: "test.default.svc.cluster.local"
 spec:
   containers:
   - name: test

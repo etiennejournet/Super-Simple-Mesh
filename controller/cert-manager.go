@@ -35,13 +35,16 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
+  //TODO : check the clusterissuer exists and is ready
 
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
+  renewBefore := "20h"
 	if certDuration == "" {
 		certDuration = "24h"
 	}
 	certDurationParsed, _ := time.ParseDuration(certDuration)
+  renewBeforeParsed, _ := time.ParseDuration(renewBefore)
 
 	return &certManagerMutationConfig{
 		ObjectName:      objectName,
@@ -55,6 +58,7 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 				CommonName: podTemplate.Annotations["cert-manager.ssm.io/service-name"],
 				DNSNames:   []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
 				Duration:   &metav1.Duration{certDurationParsed},
+        RenewBefore: &metav1.Duration{renewBeforeParsed},
 				SecretName: wh.Name + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
 					Name: caIssuer,
@@ -84,17 +88,20 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	clientSet, err := versioned.NewForConfig(mutation.KubernetesClient)
 	if err != nil {
-		log.Print(err)
+    return err
 	}
 
 	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Get(context.TODO(), mutation.ObjectName, metav1.GetOptions{})
 	if err != nil {
-		log.Print(err)
+    return err
 	}
 	if existingCert != nil {
-		log.Print("Cert already exists by the same name, patching it")
+		log.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
 		//TODO: Find a way of managing this more switfly
-		clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
+		err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
+	  if err != nil {
+      return err
+	  }
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})
 

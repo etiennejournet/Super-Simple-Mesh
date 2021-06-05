@@ -11,3 +11,12 @@ rules:
   - 'get'
   - 'list'
   - 'patch'
+- apiGroups:
+  - "cert-manager.io"
+  resources:
+  - 'certificates'
+  verbs:
+  - 'get'
+  - 'list'
+  - 'delete'
+  - 'create'

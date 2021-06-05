@@ -43,7 +43,7 @@ func getNamespace() string {
     if err != nil {
       log.Fatal("Unable to read current Namespace. Exiting")
     }
-		if ns := strings.TrimSpace(string(data)); len(ns) == 0 {
+		if ns = strings.TrimSpace(string(data)); len(ns) == 0 {
       log.Fatal("Unable to read current Namespace. Exiting")
     }
 	}

@@ -41,7 +41,7 @@ func (wh *webHook) createSelfSignedCert() ([]byte, []byte) {
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{wh.Name, wh.Name + ".default.svc"},
+		DNSNames:              []string{wh.Name, wh.Name + "." + wh.Namespace + ".svc",  wh.Name + "." + wh.Namespace + ".svc.cluster.local"},
 	}
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
@@ -57,7 +57,6 @@ func (wh *webHook) createSelfSignedCert() ([]byte, []byte) {
 
 func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
-	// creates the clientset
 	clientSet, err := kubernetes.NewForConfig(wh.Client)
 	if err != nil {
 		panic(err.Error())
