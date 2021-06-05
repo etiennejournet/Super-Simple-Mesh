@@ -11,11 +11,10 @@ webhooks:
       service:
         name: ssm
         port: 8443
-        namespace: default
+        namespace: super-simple-mesh
         path: "/"
     rules:
       - operations: ["CREATE","UPDATE"]
         apiGroups: ["apps"]
         apiVersions: ["v1"]
-        resources: ["deployments"]
-        scope:       "Namespaced"
+        resources: ["*"]
