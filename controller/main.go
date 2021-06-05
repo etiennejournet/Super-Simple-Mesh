@@ -3,35 +3,22 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-  "os"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
 func main() {
 	wh := newWebHook("ssm", 8443, 777)
 
-	cert, key := wh.createCert()
-
-  userHomeDir, err := os.UserHomeDir()
-  if err != nil {
-    log.Fatal(err)
-  }
-	err = ioutil.WriteFile(userHomeDir+"/cert.key", key, 0644)
-  if err != nil {
-    log.Fatal(err)
-  }
-	err = ioutil.WriteFile(userHomeDir+"/cert.pem", cert, 0644)
-  if err != nil {
-    log.Fatal(err)
-  }
-	wh.alterMutatingWebhook(cert)
+	cert, key := wh.createSelfSignedCert()
+	injectCAInMutatingWebhook(&wh, cert)
+	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
 	http.HandleFunc("/", wh.server)
-
 	log.Print("Listening on port ", wh.Port)
-	err = http.ListenAndServeTLS(":"+strconv.Itoa(wh.Port), userHomeDir+"/cert.pem", userHomeDir+"/cert.key", nil)
+	err := http.ListenAndServeTLS(":"+strconv.Itoa(wh.Port), certPath, keyPath, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,4 +35,25 @@ func (wh *webHook) server(w http.ResponseWriter, req *http.Request) {
 		jsonResponse, _ := json.Marshal(parseAndResolveInjectionDemand(body, wh))
 		w.Write(jsonResponse)
 	}
+}
+
+func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	certPath := userHomeDir + "/tls.crt"
+	keyPath := userHomeDir + "/tls.key"
+
+	err = ioutil.WriteFile(certPath, cert, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(keyPath, key, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return certPath, keyPath
 }

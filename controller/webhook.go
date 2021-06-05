@@ -7,18 +7,20 @@ import (
 )
 
 type webHook struct {
-	Name     string
-	Port     int
-	Client   *restclient.Config
-	EnvoyUID int
+	Name      string
+	Namespace string
+	Port      int
+	Client    *restclient.Config
+	EnvoyUID  int
 }
 
 func newWebHook(name string, port int, envoyUID int) webHook {
 	return webHook{
-		Name:     name,
-		Port:     port,
-		EnvoyUID: envoyUID,
-		Client:   kubClient(),
+		Name:      name,
+		Namespace: getNamespace(),
+		Port:      port,
+		EnvoyUID:  envoyUID,
+		Client:    kubClient(),
 	}
 }
 
