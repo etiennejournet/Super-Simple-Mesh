@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-func (wh *webHook) createSelfSignedCert() ([]byte, []byte) {
+func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	pemPrivateKey := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",

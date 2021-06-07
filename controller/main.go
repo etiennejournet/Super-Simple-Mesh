@@ -12,7 +12,7 @@ import (
 func main() {
 	wh := newWebHook("ssm", 8443, 777)
 
-	cert, key := wh.createSelfSignedCert()
+	cert, key := createSelfSignedCert(&wh)
 	injectCAInMutatingWebhook(&wh, cert)
 	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
