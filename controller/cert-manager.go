@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
+	"errors"
 	"strconv"
 	"time"
-  "errors"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -36,19 +35,19 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
-err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
-  if err != nil {
-    return &certManagerMutationConfig{}, err
-  }
+	err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
+	if err != nil {
+		return &certManagerMutationConfig{}, err
+	}
 
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
-  renewBefore := "20h"
+	renewBefore := "20h"
 	if certDuration == "" {
 		certDuration = "24h"
 	}
 	certDurationParsed, _ := time.ParseDuration(certDuration)
-  renewBeforeParsed, _ := time.ParseDuration(renewBefore)
+	renewBeforeParsed, _ := time.ParseDuration(renewBefore)
 
 	return &certManagerMutationConfig{
 		ObjectName:      objectName,
@@ -59,11 +58,11 @@ err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
 				Name: objectName,
 			},
 			Spec: certmanager.CertificateSpec{
-				CommonName: podTemplate.Annotations["cert-manager.ssm.io/service-name"],
-				DNSNames:   []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
-				Duration:   &metav1.Duration{certDurationParsed},
-        RenewBefore: &metav1.Duration{renewBeforeParsed},
-				SecretName: wh.Name + "-cert-" + objectName,
+				CommonName:  podTemplate.Annotations["cert-manager.ssm.io/service-name"],
+				DNSNames:    []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
+				Duration:    &metav1.Duration{certDurationParsed},
+				RenewBefore: &metav1.Duration{renewBeforeParsed},
+				SecretName:  wh.Name + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
 					Name: caIssuer,
 					// SSM only support one mesh for now
@@ -92,20 +91,20 @@ err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	clientSet, err := versioned.NewForConfig(mutation.KubernetesClient)
 	if err != nil {
-    return err
+		return err
 	}
 
 	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Get(context.TODO(), mutation.ObjectName, metav1.GetOptions{})
 	if err != nil {
-    return err
+		return err
 	}
 	if existingCert != nil {
-		log.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
+		InfoLogger.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
 		//TODO: Find a way of managing this more switfly
 		err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
-	  if err != nil {
-      return err
-	  }
+		if err != nil {
+			return err
+		}
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})
 
@@ -114,10 +113,10 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 
 func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	// TODO: this function should implement idempotency
-	log.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
+	InfoLogger.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
 	err := mutation.createCertificateRequest()
 	if err != nil {
-		log.Print(err)
+		ErrorLogger.Print(err)
 		return []patchValue{}
 	}
 
@@ -188,15 +187,16 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 
 func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName string) error {
 	clientSet, err := versioned.NewForConfig(restConfig)
-  if err != nil {
-    log.Print(err)
-  }
-  clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
-  if err != nil {
-    log.Print(err)
-  }
-  if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
-    err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")
-  }
-  return err
+	if err != nil {
+		ErrorLogger.Print("Unable to create kubernetes API Client")
+		ErrorLogger.Print(err)
+	}
+	clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
+	if err != nil {
+		ErrorLogger.Print(err)
+	}
+	if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
+		err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")
+	}
+	return err
 }

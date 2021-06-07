@@ -10,15 +10,15 @@ import (
 )
 
 var (
-  InfoLogger *log.Logger
-  WarnLogger *log.Logger
-  ErrorLogger *log.Logger
+	InfoLogger  *log.Logger
+	WarnLogger  *log.Logger
+	ErrorLogger *log.Logger
 )
 
 func init() {
-  InfoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-  WarnLogger = log.New(os.Stdout, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-  ErrorLogger = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	InfoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarnLogger = log.New(os.Stdout, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
 	http.HandleFunc("/", wh.server)
-	log.Print("Listening on port ", wh.Port)
+	InfoLogger.Print("WebHook listening on port ", wh.Port)
 	err := http.ListenAndServeTLS(":"+strconv.Itoa(wh.Port), certPath, keyPath, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -47,25 +47,4 @@ func (wh *webHook) server(w http.ResponseWriter, req *http.Request) {
 		jsonResponse, _ := json.Marshal(parseAndResolveInjectionDemand(body, wh))
 		w.Write(jsonResponse)
 	}
-}
-
-func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {
-	userHomeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	certPath := userHomeDir + "/tls.crt"
-	keyPath := userHomeDir + "/tls.key"
-
-	err = ioutil.WriteFile(certPath, cert, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = ioutil.WriteFile(keyPath, key, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return certPath, keyPath
 }

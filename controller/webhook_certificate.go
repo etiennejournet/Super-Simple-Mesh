@@ -1,21 +1,21 @@
 package main
 
 import (
-	"encoding/json"
-	types "k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes"
-  "os"
-	"context"
-	"encoding/base64"
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
-	"log"
+	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"math/big"
+	"os"
 	"time"
 )
 
@@ -27,7 +27,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		ErrorLogger.Fatal(err)
 	}
 
 	template := x509.Certificate{
@@ -41,7 +41,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{wh.Name, wh.Name + "." + wh.Namespace + ".svc",  wh.Name + "." + wh.Namespace + ".svc.cluster.local"},
+		DNSNames:              []string{wh.Name, wh.Name + "." + wh.Namespace + ".svc", wh.Name + "." + wh.Namespace + ".svc.cluster.local"},
 	}
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
@@ -49,7 +49,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	pem.Encode(cert, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %s", err)
+		ErrorLogger.Fatal(err)
 	}
 
 	return cert.Bytes(), pemPrivateKey
@@ -59,13 +59,12 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
 	clientSet, err := kubernetes.NewForConfig(wh.KubernetesClient)
 	if err != nil {
-		log.Print(err)
+		ErrorLogger.Print(err)
 	}
 
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), wh.Name, metav1.GetOptions{})
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		ErrorLogger.Fatal(err)
 	}
 
 	base64.StdEncoding.Encode(hashedCA, ca)
@@ -73,20 +72,37 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 		Op:    "replace",
 		Path:  "/webhooks/0/clientConfig/caBundle",
 		Value: string(hashedCA),
-	  },
+	},
 	}
 	newCAByte, _ := json.Marshal(newCA)
 
-	log.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
+	InfoLogger.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), wh.Name, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		ErrorLogger.Fatal(err)
 	}
 }
 
-//func watchMutatingWebHookObject(wh *WebHook) {}
+func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		ErrorLogger.Fatal(err)
+	}
 
+	certPath := userHomeDir + "/tls.crt"
+	keyPath := userHomeDir + "/tls.key"
+
+	err = ioutil.WriteFile(certPath, cert, 0644)
+	if err != nil {
+		ErrorLogger.Fatal(err)
+	}
+	err = ioutil.WriteFile(keyPath, key, 0644)
+	if err != nil {
+		ErrorLogger.Fatal(err)
+	}
+
+	return certPath, keyPath
+}
 
 // This is not usable for now because no Kubernetes Signer permits creating server certs
 //func createCAUsingKubernetesAPI(clientSet *kubernetes.Clientset) ([]byte, []byte) {

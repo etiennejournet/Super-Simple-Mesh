@@ -7,21 +7,21 @@ import (
 )
 
 type webHook struct {
-	Name      string
-	Namespace string
-	Port      int
-	KubernetesClient    *restclient.Config
-	EnvoyUID  int
+	Name             string
+	Namespace        string
+	Port             int
+	KubernetesClient *restclient.Config
+	EnvoyUID         int
 }
 
 func newWebHook(name string, port int, envoyUID int) webHook {
-  InfoLogger.Print("Starting "+name+"  webhook on port "+strconv.Itoa(port)+", envoy User ID is " +strconv.Itoa(envoyUID))
+	InfoLogger.Print("Starting " + name + "  webhook on port " + strconv.Itoa(port) + ", envoy User ID is " + strconv.Itoa(envoyUID))
 	return webHook{
-		Name:      name,
-		Namespace: getNamespace(),
-		Port:      port,
-		EnvoyUID:  envoyUID,
-		KubernetesClient:    kubClient(),
+		Name:             name,
+		Namespace:        getNamespace(),
+		Port:             port,
+		EnvoyUID:         envoyUID,
+		KubernetesClient: kubClient(),
 	}
 }
 
