@@ -18,7 +18,7 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 
 	podTemplate, err := getPodTemplateFromAdmissionRequest(admissionReview.Request)
 	if err != nil {
-		WarnLogger.Print(err)
+		ErrorLogger.Print(err)
 	} else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
 		InfoLogger.Print("Patching demand of type cert-manager received")
 
@@ -37,7 +37,7 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 
 	patchByte, err := json.Marshal(patch)
 	if err != nil {
-		WarnLogger.Print(err)
+		ErrorLogger.Print(err)
 	}
 
 	admissionReview.Response = &admission.AdmissionResponse{
