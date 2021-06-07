@@ -15,6 +15,7 @@ type webHook struct {
 }
 
 func newWebHook(name string, port int, envoyUID int) webHook {
+  InfoLogger.Print("Starting "+name+"  webhook on port "+strconv.Itoa(port)+", envoy User ID is " +strconv.Itoa(envoyUID))
 	return webHook{
 		Name:      name,
 		Namespace: getNamespace(),
