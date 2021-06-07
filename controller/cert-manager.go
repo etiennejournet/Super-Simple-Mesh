@@ -9,7 +9,7 @@ import (
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 
 	v1 "k8s.io/api/core/v1"
 	"time"
@@ -24,10 +24,10 @@ type certManagerMutationConfig struct {
 	InitContainerConfiguration *v1.Container
 	Volume                     *v1.Volume
 	VolumeMount                *v1.VolumeMount
-	KubernetesClient           *restclient.Config
+	KubernetesClient           *rest.Config
 }
 
-func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) *certManagerMutationConfig {
+func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	certificatesPath := "/var/run/ssm"
 
 	// Define the ClusterIssuer for cert-manager according to the annotation or default
@@ -35,7 +35,10 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
-  //TODO : check the clusterissuer exists and is ready
+err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
+  if err != nil {
+    return &certManagerMutationConfig{}, err
+  }
 
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
@@ -81,8 +84,8 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 			Name:      wh.Name + "-volume",
 			MountPath: certificatesPath,
 		},
-		KubernetesClient: wh.Client,
-	}
+		KubernetesClient: wh.KubernetesClient,
+	}, err
 }
 
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
@@ -180,4 +183,16 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 		volumePatch,
 		initPatch,
 		mountPatch}
+}
+
+func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName string) error {
+	clientSet, err := versioned.NewForConfig(restConfig)
+  if err != nil {
+    log.Print(err)
+  }
+  _, err = clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
+  if err != nil {
+    log.Print(err)
+  }
+  return err
 }

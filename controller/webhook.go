@@ -10,7 +10,7 @@ type webHook struct {
 	Name      string
 	Namespace string
 	Port      int
-	Client    *restclient.Config
+	KubernetesClient    *restclient.Config
 	EnvoyUID  int
 }
 
@@ -20,7 +20,7 @@ func newWebHook(name string, port int, envoyUID int) webHook {
 		Namespace: getNamespace(),
 		Port:      port,
 		EnvoyUID:  envoyUID,
-		Client:    kubClient(),
+		KubernetesClient:    kubClient(),
 	}
 }
 

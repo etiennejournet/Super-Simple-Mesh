@@ -23,13 +23,15 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 	} else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
 		log.Print("Patching demand of type cert-manager received")
 
-		mutationConfig := newCertManagerMutationConfig(
+		mutationConfig, err := newCertManagerMutationConfig(
 			wh,
 			admissionReview.Request.Name,
 			admissionReview.Request.Namespace,
 			podTemplate,
 		)
-		patch = mutationConfig.createJSONPatch()
+    if err == nil {
+		  patch = mutationConfig.createJSONPatch()
+    }
 	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
 		log.Print("Patching demand for autocert received, not implemented yet")
 		//patch = wh.autocertMutation(podTemplate)

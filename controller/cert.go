@@ -57,7 +57,7 @@ func (wh *webHook) createSelfSignedCert() ([]byte, []byte) {
 
 func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
-	clientSet, err := kubernetes.NewForConfig(wh.Client)
+	clientSet, err := kubernetes.NewForConfig(wh.KubernetesClient)
 	if err != nil {
 		log.Print(err)
 	}
