@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"time"
+  "errors"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -12,7 +14,6 @@ import (
 	"k8s.io/client-go/rest"
 
 	v1 "k8s.io/api/core/v1"
-	"time"
 )
 
 type certManagerMutationConfig struct {
@@ -190,9 +191,12 @@ func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName
   if err != nil {
     log.Print(err)
   }
-  _, err = clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
+  clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
   if err != nil {
     log.Print(err)
+  }
+  if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
+    err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")
   }
   return err
 }
