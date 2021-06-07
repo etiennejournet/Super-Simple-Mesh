@@ -13,13 +13,15 @@ import (
 func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (admissionReview admission.AdmissionReview) {
 	json.Unmarshal(admissionReviewBody, &admissionReview)
 	patch := []patchValue{}
+  var patchType admission.PatchType = "JSONPatch"
+
 	log.Print("Mutation request received for object ", admissionReview.Request.Resource.Resource, " ", admissionReview.Request.Name, " in namespace ", admissionReview.Request.Namespace)
 
 	podTemplate, err := getPodTemplateFromAdmissionRequest(admissionReview.Request)
 	if err != nil {
 		log.Print(err)
 	} else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
-		log.Print("Patching demand for cert-manager received")
+		log.Print("Patching demand of type cert-manager received")
 
 		mutationConfig := newCertManagerMutationConfig(
 			wh,
@@ -41,6 +43,7 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 	admissionReview.Response = &admission.AdmissionResponse{
 		UID:     admissionReview.Request.UID,
 		Allowed: true,
+    PatchType: &patchType,
 		Patch:   patchByte,
 	}
 	return

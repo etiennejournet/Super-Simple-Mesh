@@ -59,7 +59,7 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
 	clientSet, err := kubernetes.NewForConfig(wh.Client)
 	if err != nil {
-		panic(err.Error())
+		log.Print(err)
 	}
 
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), wh.Name, metav1.GetOptions{})
@@ -73,21 +73,23 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 		Op:    "replace",
 		Path:  "/webhooks/0/clientConfig/caBundle",
 		Value: string(hashedCA),
-	},
+	  },
 	}
 	newCAByte, _ := json.Marshal(newCA)
 
-	log.Print("Upgrading new certificate in ", wh.Name, " webhook")
+	log.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), wh.Name, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-
 }
 
+//func watchMutatingWebHookObject(wh *WebHook) {}
+
+
 // This is not usable for now because no Kubernetes Signer permits creating server certs
-//func getKubernetesCert(clientSet *kubernetes.Clientset) ([]byte, []byte) {
+//func createCAUsingKubernetesAPI(clientSet *kubernetes.Clientset) ([]byte, []byte) {
 //     var keyUsage = []certificates.KeyUsage{"server auth"}
 //     var certName = "mutating-webhook-secret"
 //
