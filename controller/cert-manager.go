@@ -112,7 +112,7 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 }
 
 func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
-	// TODO: this function should implement idempotency
+	//TODO: this function should implement idempotency
 	InfoLogger.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
 	err := mutation.createCertificateRequest()
 	if err != nil {

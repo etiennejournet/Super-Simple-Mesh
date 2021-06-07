@@ -11,6 +11,7 @@ import (
 )
 
 func kubClient() *rest.Config {
+  //TODO: refacto this
 	kubeconfig := flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	flag.Parse()
 
