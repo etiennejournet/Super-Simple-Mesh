@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 	"time"
+ log "github.com/sirupsen/logrus"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -99,7 +100,7 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 		return err
 	}
 	if existingCert != nil {
-		InfoLogger.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
+		log.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
 		//TODO: Find a way of managing this more switfly
 		err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
 		if err != nil {
@@ -113,10 +114,10 @@ func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 
 func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 	//TODO: this function should implement idempotency
-	InfoLogger.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
+	log.Print("Creating secret: cert-", mutation.ObjectName, " in namespace default with certificateRequest")
 	err := mutation.createCertificateRequest()
 	if err != nil {
-		ErrorLogger.Print(err)
+		log.Print(err)
 		return []patchValue{}
 	}
 
@@ -188,12 +189,12 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName string) error {
 	clientSet, err := versioned.NewForConfig(restConfig)
 	if err != nil {
-		ErrorLogger.Print("Unable to create kubernetes API Client")
-		ErrorLogger.Print(err)
+		log.Print("Unable to create kubernetes API Client")
+		log.Print(err)
 	}
 	clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
 	if err != nil {
-		ErrorLogger.Print(err)
+		log.Print(err)
 	}
 	if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
 		err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")

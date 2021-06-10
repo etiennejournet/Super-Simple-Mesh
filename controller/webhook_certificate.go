@@ -17,6 +17,7 @@ import (
 	"math/big"
 	"os"
 	"time"
+  log "github.com/sirupsen/logrus"
 )
 
 func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
@@ -27,7 +28,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	})
 
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	template := x509.Certificate{
@@ -49,7 +50,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	pem.Encode(cert, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	return cert.Bytes(), pemPrivateKey
@@ -59,12 +60,12 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
 	clientSet, err := kubernetes.NewForConfig(wh.KubernetesClient)
 	if err != nil {
-		ErrorLogger.Print(err)
+		log.Print(err)
 	}
 
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), wh.Name, metav1.GetOptions{})
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	base64.StdEncoding.Encode(hashedCA, ca)
@@ -76,17 +77,17 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	}
 	newCAByte, _ := json.Marshal(newCA)
 
-	InfoLogger.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
+	log.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), wh.Name, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
 func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	certPath := userHomeDir + "/tls.crt"
@@ -94,11 +95,11 @@ func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {
 
 	err = ioutil.WriteFile(certPath, cert, 0644)
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 	err = ioutil.WriteFile(keyPath, key, 0644)
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	return certPath, keyPath

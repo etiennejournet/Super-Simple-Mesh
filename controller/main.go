@@ -1,23 +1,12 @@
 package main
 
 import (
+  log "github.com/sirupsen/logrus"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 )
-
-var (
-	InfoLogger  *log.Logger
-	ErrorLogger *log.Logger
-)
-
-func init() {
-	InfoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-}
 
 func main() {
 	wh := newWebHook("ssm", 8443, 777)
@@ -27,7 +16,7 @@ func main() {
 	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
 	http.HandleFunc("/", wh.server)
-	InfoLogger.Print("WebHook listening on port ", wh.Port)
+	log.Print("WebHook listening on port ", wh.Port)
 	err := http.ListenAndServeTLS(":"+strconv.Itoa(wh.Port), certPath, keyPath, nil)
 	if err != nil {
 		log.Fatal(err)

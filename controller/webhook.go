@@ -2,6 +2,7 @@ package main
 
 import (
 	v1 "k8s.io/api/core/v1"
+   log "github.com/sirupsen/logrus"
 	restclient "k8s.io/client-go/rest"
 	"strconv"
 )
@@ -15,7 +16,7 @@ type webHook struct {
 }
 
 func newWebHook(name string, port int, envoyUID int) webHook {
-	InfoLogger.Print("Starting " + name + "  webhook on port " + strconv.Itoa(port) + ", envoy User ID is " + strconv.Itoa(envoyUID))
+	log.Print("Starting " + name + "  webhook on port " + strconv.Itoa(port) + ", envoy User ID is " + strconv.Itoa(envoyUID))
 	return webHook{
 		Name:             name,
 		Namespace:        getNamespace(),

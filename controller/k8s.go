@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"log"
+   log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
@@ -16,20 +16,20 @@ func kubClient() *rest.Config {
 	flag.Parse()
 
 	if *kubeconfig == "" {
-		InfoLogger.Print("Detected in cluster launch")
+		log.Print("Detected in cluster launch")
 		// creates the in-cluster config
 		config, err := rest.InClusterConfig()
 		if err != nil {
-			ErrorLogger.Fatal(err)
+			log.Fatal(err)
 		}
 		return config
 	}
 
 	// use the current context in kubeconfig
-	InfoLogger.Print("Detected Kubeconfig flag")
+	log.Print("Detected Kubeconfig flag")
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		ErrorLogger.Fatal(err)
+		log.Fatal(err)
 	}
 	return config
 }
