@@ -20,3 +20,9 @@ webhooks:
         apiGroups: ["apps"]
         apiVersions: ["v1"]
         resources: ["deployments", "statefulsets", "daemonsets"]
+    objectSelector:
+      matchExpressions:
+      - key: app
+        operator: NotIn
+        values:
+        - "ssm-injector"
