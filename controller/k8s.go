@@ -4,6 +4,7 @@ import (
 	"flag"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
@@ -32,6 +33,14 @@ func kubClient() *rest.Config {
 		log.Fatal(err)
 	}
 	return config
+}
+
+func createKubernetesClientSet(restConfig *rest.Config) kubernetes.Interface {
+	clientSet, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		ErrorLogger.Print(err)
+	}
+	return clientSet
 }
 
 func getNamespace() string {

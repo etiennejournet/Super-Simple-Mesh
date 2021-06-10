@@ -57,14 +57,10 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	return cert.Bytes(), pemPrivateKey
 }
 
-func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
+func injectCAInMutatingWebhook(clientSet kubernetes.Interface, webHookName string, ca []byte) {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
-	clientSet, err := kubernetes.NewForConfig(wh.KubernetesClient)
-	if err != nil {
-		log.Print(err)
-	}
 
-	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), wh.Name, metav1.GetOptions{})
+	_, err := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), webHookName, metav1.GetOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,8 +74,8 @@ func injectCAInMutatingWebhook(wh *webHook, ca []byte) {
 	}
 	newCAByte, _ := json.Marshal(newCA)
 
-	log.Print("Installing new certificate in ", wh.Name, " mutating webhook configuration")
-	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), wh.Name, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
+	InfoLogger.Print("Installing new certificate in ", webHookName, " mutating webhook configuration")
+	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), webHookName, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}

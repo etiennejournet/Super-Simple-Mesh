@@ -1,18 +1,23 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	admissionRegistration "k8s.io/api/admissionregistration/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	"reflect"
 	"testing"
 )
 
+var wh *webHook = &webHook{
+	Name:      "my-test-webhook",
+	Namespace: "my-test-namespace",
+}
+
 func TestCreateSelfSignedCert(t *testing.T) {
-	wh := &webHook{
-		Name:      "my-test-certificate",
-		Namespace: "my-test-namespace",
-	}
 	cert, key := createSelfSignedCert(wh)
 
 	_, err := tls.X509KeyPair(cert, key)
@@ -36,5 +41,28 @@ func TestCreateSelfSignedCert(t *testing.T) {
 
 	if err = certificate.CheckSignatureFrom(certificate); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCAInjection(t *testing.T) {
+	clientSet := fake.NewSimpleClientset()
+	cert, _ := createSelfSignedCert(wh)
+
+	mutatingWebHookConfiguration := &admissionRegistration.MutatingWebhookConfiguration{
+		ObjectMeta: metav1.ObjectMeta{Name: wh.Name},
+		Webhooks: []admissionRegistration.MutatingWebhook{{
+			Name: wh.Name,
+		}},
+	}
+
+	_, err := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Create(context.TODO(), mutatingWebHookConfiguration, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	injectCAInMutatingWebhook(clientSet, wh.Name, cert)
+
+	result, _ := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), mutatingWebHookConfiguration.ObjectMeta.Name, metav1.GetOptions{})
+	if !reflect.DeepEqual(result.Webhooks[0].ClientConfig.CABundle, cert) {
+		t.Fatal("Certificate not properly injected")
 	}
 }
