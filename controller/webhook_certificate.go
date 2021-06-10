@@ -39,9 +39,10 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 		NotBefore: time.Now(),
 		NotAfter:  time.Now().Add(time.Hour * 24 * 180),
 
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
+		IsCA:                  true,
 		DNSNames:              []string{wh.Name, wh.Name + "." + wh.Namespace + ".svc", wh.Name + "." + wh.Namespace + ".svc.cluster.local"},
 	}
 
