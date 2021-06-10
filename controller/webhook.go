@@ -1,8 +1,8 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-   log "github.com/sirupsen/logrus"
 	restclient "k8s.io/client-go/rest"
 	"strconv"
 )

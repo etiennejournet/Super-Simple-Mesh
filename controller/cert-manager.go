@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
- log "github.com/sirupsen/logrus"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -195,8 +195,7 @@ func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName
 	clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
 	if err != nil {
 		log.Print(err)
-	}
-	if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
+	} else if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
 		err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")
 	}
 	return err

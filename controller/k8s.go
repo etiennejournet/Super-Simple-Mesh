@@ -2,16 +2,16 @@ package main
 
 import (
 	"flag"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-   log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
 
 func kubClient() *rest.Config {
-  //TODO: refacto this
+	//TODO: refacto this
 	kubeconfig := flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	flag.Parse()
 

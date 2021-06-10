@@ -1,8 +1,8 @@
 package main
 
 import (
-  log "github.com/sirupsen/logrus"
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"

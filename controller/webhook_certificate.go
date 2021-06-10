@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -17,7 +18,6 @@ import (
 	"math/big"
 	"os"
 	"time"
-  log "github.com/sirupsen/logrus"
 )
 
 func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
