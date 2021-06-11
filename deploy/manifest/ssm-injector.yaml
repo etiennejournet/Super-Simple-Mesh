@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssm-injector
+  namespace: super-simple-mesh
+  labels:
+    app: ssm-injector
+    version: 0.1.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssm-injector
+  template:
+    metadata:
+      labels:
+        app: ssm-injector
+    spec:
+      containers:
+      - name: ssm-injector
+        image: etiennejournet/ssm-injector:0.1.0
+        imagePullPolicy: Always
+      serviceAccountName: ssm-injector

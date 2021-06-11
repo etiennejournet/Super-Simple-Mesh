@@ -1,21 +1,28 @@
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: ssm
 webhooks:
   - name: ssm.default.svc.cluster.local
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
     failurePolicy: Fail
     clientConfig:
       caBundle: ""
       service:
         name: ssm
         port: 8443
-        namespace: default
+        namespace: super-simple-mesh
         path: "/"
     rules:
       - operations: ["CREATE","UPDATE"]
         apiGroups: ["apps"]
         apiVersions: ["v1"]
-        resources: ["deployments"]
-        scope:       "Namespaced"
+        resources: ["deployments", "statefulsets", "daemonsets"]
+    objectSelector:
+      matchExpressions:
+      - key: app
+        operator: NotIn
+        values:
+        - "ssm-injector"

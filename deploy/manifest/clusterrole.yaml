@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ssm-injector
+rules:
+- apiGroups:
+  - 'admissionregistration.k8s.io'
+  resources:
+  - 'mutatingwebhookconfigurations'
+  verbs:
+  - 'get'
+  - 'list'
+  - 'patch'
+- apiGroups:
+  - "cert-manager.io"
+  resources:
+  - '*'
+  verbs:
+  - 'get'
+  - 'list'
+  - 'delete'
+  - 'create'

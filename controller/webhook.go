@@ -1,24 +1,28 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	restclient "k8s.io/client-go/rest"
 	"strconv"
 )
 
 type webHook struct {
-	Name     string
-	Port     int
-	Client   *restclient.Config
-	EnvoyUID int
+	Name             string
+	Namespace        string
+	Port             int
+	KubernetesClient *restclient.Config
+	EnvoyUID         int
 }
 
 func newWebHook(name string, port int, envoyUID int) webHook {
+	log.Print("Starting " + name + "  webhook on port " + strconv.Itoa(port) + ", envoy User ID is " + strconv.Itoa(envoyUID))
 	return webHook{
-		Name:     name,
-		Port:     port,
-		EnvoyUID: envoyUID,
-		Client:   kubClient(),
+		Name:             name,
+		Namespace:        getNamespace(),
+		Port:             port,
+		EnvoyUID:         envoyUID,
+		KubernetesClient: kubClient(),
 	}
 }
 

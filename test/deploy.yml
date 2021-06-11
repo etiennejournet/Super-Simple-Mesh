@@ -14,7 +14,7 @@ spec:
       labels:
         app: nginx
       annotations:
-        cert-manager.ssm.io/service-name: "nginx2.default.svc.cluster.local"
+        cert-manager.ssm.io/service-name: "nginx.default.svc.cluster.local"
     spec:
       containers:
       - name: nginx

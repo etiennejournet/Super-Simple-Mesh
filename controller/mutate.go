@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	admission "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,24 +13,27 @@ import (
 func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (admissionReview admission.AdmissionReview) {
 	json.Unmarshal(admissionReviewBody, &admissionReview)
 	patch := []patchValue{}
+	var patchType admission.PatchType = "JSONPatch"
+
 	log.Print("Mutation request received for object ", admissionReview.Request.Resource.Resource, " ", admissionReview.Request.Name, " in namespace ", admissionReview.Request.Namespace)
 
 	podTemplate, err := getPodTemplateFromAdmissionRequest(admissionReview.Request)
 	if err != nil {
 		log.Print(err)
 	} else if podTemplate.Annotations["cert-manager.ssm.io/service-name"] != "" {
-		log.Print("Patching demand for cert-manager received")
+		log.Print("Patching demand of type cert-manager received")
 
-		mutationConfig := newCertManagerMutationConfig(
+		mutationConfig, err := newCertManagerMutationConfig(
 			wh,
 			admissionReview.Request.Name,
 			admissionReview.Request.Namespace,
 			podTemplate,
 		)
-		patch = mutationConfig.createJSONPatch()
+		if err == nil {
+			patch = mutationConfig.createJSONPatch()
+		}
 	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
 		log.Print("Patching demand for autocert received, not implemented yet")
-		//patch = wh.autocertMutation(podTemplate)
 	}
 
 	patchByte, err := json.Marshal(patch)
@@ -39,9 +42,10 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 	}
 
 	admissionReview.Response = &admission.AdmissionResponse{
-		UID:     admissionReview.Request.UID,
-		Allowed: true,
-		Patch:   patchByte,
+		UID:       admissionReview.Request.UID,
+		Allowed:   true,
+		PatchType: &patchType,
+		Patch:     patchByte,
 	}
 	return
 }
