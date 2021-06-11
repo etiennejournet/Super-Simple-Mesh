@@ -7,7 +7,13 @@ Super Simple Mesh is useful for teams who just want to encrypt flows between the
 
 SSM needs Cert-Manager for delivering certificates. It will request certificates for your workloads based on annotations that you provide.
 
-### Cert-Manager 
+### Setup
+```
+git clone git@github.com:etiennejournet/Super-Simple-Mesh.git
+kubectl apply -f Super-Simple-Mesh/deploy/manifest
+```
+
+### With Cert-Manager 
 #### Basic setup
 Setup Cert-Manager, using helm for example :
 
