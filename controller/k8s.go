@@ -17,7 +17,7 @@ func kubClient() *rest.Config {
 	flag.Parse()
 
 	if *kubeconfig == "" {
-		log.Print("Detected in cluster launch")
+		log.Info("Detected in cluster launch")
 		// creates the in-cluster config
 		config, err := rest.InClusterConfig()
 		if err != nil {
@@ -27,7 +27,7 @@ func kubClient() *rest.Config {
 	}
 
 	// use the current context in kubeconfig
-	log.Print("Detected Kubeconfig flag")
+	log.Info("Detected Kubeconfig flag")
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		log.Fatal(err)
@@ -38,7 +38,7 @@ func kubClient() *rest.Config {
 func createKubernetesClientSet(restConfig *rest.Config) kubernetes.Interface {
 	clientSet, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		ErrorLogger.Print(err)
+		log.Print(err)
 	}
 	return clientSet
 }

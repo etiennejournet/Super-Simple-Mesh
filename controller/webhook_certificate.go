@@ -74,7 +74,7 @@ func injectCAInMutatingWebhook(clientSet kubernetes.Interface, webHookName strin
 	}
 	newCAByte, _ := json.Marshal(newCA)
 
-	InfoLogger.Print("Installing new certificate in ", webHookName, " mutating webhook configuration")
+	log.Info("Installing new certificate in ", webHookName, " mutating webhook configuration")
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), webHookName, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
 		log.Fatal(err)
