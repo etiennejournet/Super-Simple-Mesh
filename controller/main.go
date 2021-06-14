@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	wh := newWebHook("ssm", 8443, 777)
+	wh := newWebHook("ssm", getNamespace(), 8443, 777, kubClient())
 
 	cert, key := createSelfSignedCert(&wh)
 	injectCAInMutatingWebhook(createKubernetesClientSet(wh.KubernetesClient), wh.Name, cert)
