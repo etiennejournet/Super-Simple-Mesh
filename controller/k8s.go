@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	certManagerClient "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -37,6 +38,14 @@ func kubClient() *rest.Config {
 
 func createKubernetesClientSet(restConfig *rest.Config) kubernetes.Interface {
 	clientSet, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		log.Print(err)
+	}
+	return clientSet
+}
+
+func createCertManagerClientSet(restConfig *rest.Config) certManagerClient.Interface {
+	clientSet, err := certManagerClient.NewForConfig(restConfig)
 	if err != nil {
 		log.Print(err)
 	}
