@@ -9,7 +9,7 @@ import (
 
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metacertmanager "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	"github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	certManagerClient "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
@@ -36,7 +36,7 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
-	err := checkClusterIssuerExistsAndReady(wh.KubernetesClient, caIssuer)
+	err := checkClusterIssuerExistsAndReady(createCertManagerClientSet(wh.KubernetesClient), caIssuer)
 	if err != nil {
 		return &certManagerMutationConfig{}, err
 	}
@@ -90,7 +90,7 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 }
 
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
-	clientSet, err := versioned.NewForConfig(mutation.KubernetesClient)
+	clientSet, err := certManagerClient.NewForConfig(mutation.KubernetesClient)
 	if err != nil {
 		return err
 	}
@@ -186,16 +186,9 @@ func (mutation *certManagerMutationConfig) createJSONPatch() []patchValue {
 		mountPatch}
 }
 
-func checkClusterIssuerExistsAndReady(restConfig *rest.Config, clusterIssuerName string) error {
-	clientSet, err := versioned.NewForConfig(restConfig)
-	if err != nil {
-		log.Print("Unable to create kubernetes API Client")
-		log.Print(err)
-	}
+func checkClusterIssuerExistsAndReady(clientSet certManagerClient.Interface, clusterIssuerName string) error {
 	clusterIssuer, err := clientSet.CertmanagerV1().ClusterIssuers().Get(context.TODO(), clusterIssuerName, metav1.GetOptions{})
-	if err != nil {
-		log.Print(err)
-	} else if clusterIssuer != nil && clusterIssuer.Status.Conditions[0].Status == "False" {
+	if err == nil && clusterIssuer.Status.Conditions[0].Status == "False" {
 		err = errors.New("ClusterIssuer " + clusterIssuerName + " is not Ready")
 	}
 	return err
