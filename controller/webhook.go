@@ -15,14 +15,14 @@ type webHook struct {
 	EnvoyUID         int
 }
 
-func newWebHook(name string, port int, envoyUID int) webHook {
+func newWebHook(name string, namespace string, port int, envoyUID int, kubClient *restclient.Config) webHook {
 	log.Print("Starting " + name + "  webhook on port " + strconv.Itoa(port) + ", envoy User ID is " + strconv.Itoa(envoyUID))
 	return webHook{
 		Name:             name,
-		Namespace:        getNamespace(),
+		Namespace:        namespace,
 		Port:             port,
 		EnvoyUID:         envoyUID,
-		KubernetesClient: kubClient(),
+		KubernetesClient: kubClient,
 	}
 }
 
