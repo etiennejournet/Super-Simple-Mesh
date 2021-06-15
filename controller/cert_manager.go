@@ -13,7 +13,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
+	//"k8s.io/client-go/rest"
 )
 
 type certManagerMutationConfig struct {
@@ -25,18 +25,20 @@ type certManagerMutationConfig struct {
 	InitContainerConfiguration *v1.Container
 	Volume                     *v1.Volume
 	VolumeMount                *v1.VolumeMount
-	KubernetesClient           *rest.Config
+	KubernetesClient           certManagerClient.Interface
 }
 
 func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	certificatesPath := "/var/run/ssm"
+
+	kubernetesClient := createCertManagerClientSet(wh.KubernetesClient)
 
 	// Define the ClusterIssuer for cert-manager according to the annotation or default
 	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
-	err := checkClusterIssuerExistsAndReady(createCertManagerClientSet(wh.KubernetesClient), caIssuer)
+	err := checkClusterIssuerExistsAndReady(kubernetesClient, caIssuer)
 	if err != nil {
 		return &certManagerMutationConfig{}, err
 	}
@@ -85,16 +87,12 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 			Name:      wh.Name + "-volume",
 			MountPath: certificatesPath,
 		},
-		KubernetesClient: wh.KubernetesClient,
+		KubernetesClient: kubernetesClient,
 	}, err
 }
 
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
-	clientSet, err := certManagerClient.NewForConfig(mutation.KubernetesClient)
-	if err != nil {
-		return err
-	}
-
+	clientSet := mutation.KubernetesClient
 	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Get(context.TODO(), mutation.ObjectName, metav1.GetOptions{})
 	if err != nil {
 		return err
