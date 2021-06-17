@@ -18,7 +18,7 @@ type webHook struct {
 }
 
 type webHookInterface interface {
-	createCertManagerClientSet() certManagerClient.Interface
+	createCertManagerClientSet() (certManagerClient.Interface, error)
 	defineSidecar(certificatesPath string) *v1.Container
 	defineInitContainer() *v1.Container
 	getName() string
@@ -72,18 +72,18 @@ func (wh *webHook) defineInitContainer() *v1.Container {
 	}
 }
 
-func (wh *webHook) createKubernetesClientSet() kubernetes.Interface {
+func (wh *webHook) createKubernetesClientSet() (kubernetes.Interface, error) {
 	clientSet, err := kubernetes.NewForConfig(wh.RestConfig)
 	if err != nil {
 		log.Print(err)
 	}
-	return clientSet
+	return clientSet, err
 }
 
-func (wh *webHook) createCertManagerClientSet() certManagerClient.Interface {
+func (wh *webHook) createCertManagerClientSet() (certManagerClient.Interface, error) {
 	clientSet, err := certManagerClient.NewForConfig(wh.RestConfig)
 	if err != nil {
 		log.Print(err)
 	}
-	return clientSet
+	return clientSet, err
 }

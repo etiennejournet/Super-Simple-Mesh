@@ -58,7 +58,11 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 		PodTemplate:     &podTemplate,
 		Certificate: &certmanager.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: objectName,
+				Name:      objectName,
+				Namespace: objectNamespace,
+				Labels: map[string]string{
+					"cert-manager.ssm.io/certificate-name": objectName,
+				},
 			},
 			Spec: certmanager.CertificateSpec{
 				CommonName:  podTemplate.Annotations["cert-manager.ssm.io/service-name"],
@@ -93,16 +97,24 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 
 func (mutation *certManagerMutationConfig) createCertificateRequest() error {
 	clientSet := mutation.KubernetesClient
-	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Get(context.TODO(), mutation.ObjectName, metav1.GetOptions{})
+	existingCert, err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).List(
+		context.TODO(),
+		metav1.ListOptions{
+			LabelSelector: "cert-manager.ssm.io/certificate-name",
+		},
+	)
 	if err != nil {
 		return err
 	}
-	if existingCert != nil {
-		log.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
-		//TODO: Find a way of managing this more switfly
-		err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
-		if err != nil {
-			return err
+
+	for _, cert := range existingCert.Items {
+		if cert.Name == mutation.ObjectName {
+			log.Print("Cert " + mutation.ObjectName + " already exists in namespace " + mutation.ObjectNamespace + ", patching it")
+			//TODO: Find a way of managing this more switfly
+			err := clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Delete(context.TODO(), mutation.ObjectName, metav1.DeleteOptions{})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	_, err = clientSet.CertmanagerV1().Certificates(mutation.ObjectNamespace).Create(context.TODO(), mutation.Certificate, metav1.CreateOptions{})

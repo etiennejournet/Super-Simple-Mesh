@@ -50,6 +50,28 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 	}
 }
 
+func TestNewCreateCertificateRequest(t *testing.T) {
+	whTest := &webHookTest{
+		&webHook{
+			Name:       "my-test-webhook",
+			EnvoyUID:   777,
+			RestConfig: &rest.Config{},
+		},
+	}
+	podTemplateSpec := corev1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
+	}
+
+	mutationConfig, err := newCertManagerMutationConfig(whTest, "my-test-object-not-existing-cert", "my-test-namespace", podTemplateSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = mutationConfig.createCertificateRequest()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestCheckClusterIssuerExistsAndReady(t *testing.T) {
 	clientSet := certManagerTesting.NewSimpleClientset()
 	err := checkClusterIssuerExistsAndReady(clientSet, "test")
@@ -90,6 +112,6 @@ func TestCheckClusterIssuerExistsAndReady(t *testing.T) {
 
 	err = checkClusterIssuerExistsAndReady(clientSet, "test")
 	if err != nil {
-		t.Fatal("Found Ready cluster issuer - Should be not Ready")
+		t.Fatal(err)
 	}
 }
