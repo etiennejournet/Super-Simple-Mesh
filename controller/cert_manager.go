@@ -31,14 +31,17 @@ type certManagerMutationConfig struct {
 func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	certificatesPath := "/var/run/ssm"
 
-	kubernetesClient := wh.createCertManagerClientSet()
+	kubernetesClient, err := wh.createCertManagerClientSet()
+	if err != nil {
+		return &certManagerMutationConfig{}, err
+	}
 
 	// Define the ClusterIssuer for cert-manager according to the annotation or default
 	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
 	if caIssuer == "" {
 		caIssuer = "ca-issuer"
 	}
-	err := checkClusterIssuerExistsAndReady(kubernetesClient, caIssuer)
+	err = checkClusterIssuerExistsAndReady(kubernetesClient, caIssuer)
 	if err != nil {
 		return &certManagerMutationConfig{}, err
 	}

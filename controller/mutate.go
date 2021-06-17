@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (admissionReview admission.AdmissionReview) {
+func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh webHookInterface) (admissionReview admission.AdmissionReview) {
 	json.Unmarshal(admissionReviewBody, &admissionReview)
 	patch := []patchValue{}
 	var patchType admission.PatchType = "JSONPatch"

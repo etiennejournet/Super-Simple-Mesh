@@ -8,6 +8,7 @@ import (
 	admissionRegistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -64,5 +65,17 @@ func TestCAInjection(t *testing.T) {
 	result, _ := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), mutatingWebHookConfiguration.ObjectMeta.Name, metav1.GetOptions{})
 	if !reflect.DeepEqual(result.Webhooks[0].ClientConfig.CABundle, cert) {
 		t.Fatal("Certificate not properly injected")
+	}
+}
+
+func TestWriteCertsToHomeFolder(t *testing.T) {
+	certPath, keyPath := writeCertsToHomeFolder([]byte{}, []byte{})
+	defer os.Remove(certPath)
+	defer os.Remove(keyPath)
+	if _, err := os.Stat(certPath); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(keyPath); err != nil {
+		t.Fatal(err)
 	}
 }

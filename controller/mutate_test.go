@@ -11,6 +11,46 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+func TestParseAndResolveInjectionDemand(t *testing.T) {
+	whTest := &webHookTest{
+		&webHook{
+			Name:     "my-test-webhook",
+			EnvoyUID: 777,
+		},
+	}
+	podTemplateSpec := v1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-pod-template",
+			Annotations: map[string]string{
+				"cert-manager.ssm.io/service-name": "Test",
+			},
+		},
+	}
+	rawPodTemplateSpec, _ := json.Marshal(podTemplateSpec)
+	testObjectRawExtension := runtime.RawExtension{
+		Raw: rawPodTemplateSpec,
+	}
+	admissionReview := admission.AdmissionReview{
+		Request: &admission.AdmissionRequest{
+			UID: "1",
+			Kind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "ReplicaSet",
+			},
+			Operation: "CREATE",
+			Namespace: "test-namespace",
+			Object:    testObjectRawExtension,
+		},
+	}
+	admissionReviewMarshaled, _ := json.Marshal(admissionReview)
+
+	podTemplate := parseAndResolveInjectionDemand(admissionReviewMarshaled, whTest)
+	if !podTemplate.Response.Allowed {
+		t.Fatal("Error building Admission Response with non-mutable object")
+	}
+}
+
 func TestGetPodTemplateFromAdmissionRequest(t *testing.T) {
 	podTemplateSpec := v1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},

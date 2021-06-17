@@ -43,3 +43,50 @@ func TestInitContainer(t *testing.T) {
 		t.Fatal("Type problem in sidecar creation, type found: " + reflect.TypeOf(container).String())
 	}
 }
+
+func TestGetEnvoyUID(t *testing.T) {
+	wh := &webHook{
+		EnvoyUID: 777,
+	}
+	if wh.getEnvoyUID() != wh.EnvoyUID {
+		t.Fatal("Error getting EnvoyUID")
+	}
+}
+
+func TestKubernetesClient(t *testing.T) {
+	wh := &webHook{
+		RestConfig: &rest.Config{},
+	}
+	_, err := wh.createKubernetesClientSet()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wh.RestConfig = &rest.Config{
+		QPS:   1,
+		Burst: -1,
+	}
+	_, err = wh.createKubernetesClientSet()
+	if err == nil {
+		t.Fatal("Parameters of rest config are supposed to throw an error")
+	}
+}
+
+func TestCertManagerClient(t *testing.T) {
+	wh := &webHook{
+		RestConfig: &rest.Config{},
+	}
+	_, err := wh.createCertManagerClientSet()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wh.RestConfig = &rest.Config{
+		QPS:   1,
+		Burst: -1,
+	}
+	_, err = wh.createCertManagerClientSet()
+	if err == nil {
+		t.Fatal("Parameters of rest config are supposed to throw an error")
+	}
+}

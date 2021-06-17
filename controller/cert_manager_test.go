@@ -7,6 +7,8 @@ import (
 	certManagerTesting "github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"testing"
 )
@@ -15,7 +17,11 @@ type webHookTest struct {
 	webHookInterface
 }
 
-func (wh *webHookTest) createCertManagerClientSet() certManagerClient.Interface {
+func (wh *webHookTest) createKubernetesClientSet() (kubernetes.Interface, error) {
+	return fake.NewSimpleClientset(), nil
+}
+
+func (wh *webHookTest) createCertManagerClientSet() (certManagerClient.Interface, error) {
 	clientSet := certManagerTesting.NewSimpleClientset()
 	readyClusterIssuer := &certmanager.ClusterIssuer{
 		ObjectMeta: metav1.ObjectMeta{Name: "ca-issuer"},
@@ -28,8 +34,12 @@ func (wh *webHookTest) createCertManagerClientSet() certManagerClient.Interface 
 			},
 		},
 	}
-	clientSet.CertmanagerV1().ClusterIssuers().Create(context.TODO(), readyClusterIssuer, metav1.CreateOptions{})
-	return clientSet
+	_, err := clientSet.CertmanagerV1().ClusterIssuers().Create(context.TODO(), readyClusterIssuer, metav1.CreateOptions{})
+	if err != nil {
+		return clientSet, err
+	}
+
+	return clientSet, nil
 }
 
 func TestNewCertManagerMutationConfig(t *testing.T) {
