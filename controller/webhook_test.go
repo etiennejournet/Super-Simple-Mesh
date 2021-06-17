@@ -8,11 +8,11 @@ import (
 
 func TestNewWebHook(t *testing.T) {
 	wh := &webHook{
-		Name:             "my-test-webhook",
-		Namespace:        "my-test-namespace",
-		Port:             8443,
-		KubernetesClient: &rest.Config{},
-		EnvoyUID:         777,
+		Name:       "my-test-webhook",
+		Namespace:  "my-test-namespace",
+		Port:       8443,
+		RestConfig: &rest.Config{},
+		EnvoyUID:   777,
 	}
 	testWebHook := newWebHook(wh.Name, wh.Namespace, wh.Port, wh.EnvoyUID, &rest.Config{})
 	if !reflect.DeepEqual(testWebHook, *wh) {
@@ -43,4 +43,3 @@ func TestInitContainer(t *testing.T) {
 		t.Fatal("Type problem in sidecar creation, type found: " + reflect.TypeOf(container).String())
 	}
 }
-

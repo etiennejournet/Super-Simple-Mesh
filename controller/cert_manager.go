@@ -28,10 +28,10 @@ type certManagerMutationConfig struct {
 	KubernetesClient           certManagerClient.Interface
 }
 
-func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
+func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	certificatesPath := "/var/run/ssm"
 
-	kubernetesClient := createCertManagerClientSet(wh.KubernetesClient)
+	kubernetesClient := wh.createCertManagerClientSet()
 
 	// Define the ClusterIssuer for cert-manager according to the annotation or default
 	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
@@ -65,7 +65,7 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 				DNSNames:    []string{podTemplate.Annotations["cert-manager.ssm.io/service-name"]},
 				Duration:    &metav1.Duration{certDurationParsed},
 				RenewBefore: &metav1.Duration{renewBeforeParsed},
-				SecretName:  wh.Name + "-cert-" + objectName,
+				SecretName:  wh.getName() + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
 					Name: caIssuer,
 					// SSM only support one mesh for now
@@ -76,15 +76,15 @@ func newCertManagerMutationConfig(wh *webHook, objectName string, objectNamespac
 		SidecarConfiguration:       wh.defineSidecar(certificatesPath),
 		InitContainerConfiguration: wh.defineInitContainer(),
 		Volume: &v1.Volume{
-			Name: wh.Name + "-volume",
+			Name: wh.getName() + "-volume",
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
-					SecretName: wh.Name + "-cert-" + objectName,
+					SecretName: wh.getName() + "-cert-" + objectName,
 				},
 			},
 		},
 		VolumeMount: &v1.VolumeMount{
-			Name:      wh.Name + "-volume",
+			Name:      wh.getName() + "-volume",
 			MountPath: certificatesPath,
 		},
 		KubernetesClient: kubernetesClient,

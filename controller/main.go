@@ -12,7 +12,7 @@ func main() {
 	wh := newWebHook("ssm", getNamespace(), 8443, 777, kubClient())
 
 	cert, key := createSelfSignedCert(&wh)
-	injectCAInMutatingWebhook(createKubernetesClientSet(wh.KubernetesClient), wh.Name, cert)
+	injectCAInMutatingWebhook(wh.createKubernetesClientSet(), wh.Name, cert)
 	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
 	http.HandleFunc("/", wh.server)
