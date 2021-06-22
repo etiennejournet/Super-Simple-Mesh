@@ -13,15 +13,17 @@ import (
 	"testing"
 )
 
-var wh *webHook = &webHook{
-	Name:      "my-test-webhook",
-	Namespace: "my-test-namespace",
-}
-
 func TestCreateSelfSignedCert(t *testing.T) {
-	cert, key := createSelfSignedCert(wh)
+	wh := &webHook{
+		Name:      "my-test-webhook",
+		Namespace: "my-test-namespace",
+	}
+	cert, key, err := createSelfSignedCert(wh)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	_, err := tls.X509KeyPair(cert, key)
+	_, err = tls.X509KeyPair(cert, key)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,8 +48,19 @@ func TestCreateSelfSignedCert(t *testing.T) {
 }
 
 func TestCAInjection(t *testing.T) {
+	wh := &webHook{
+		Name:      "my-test-webhook",
+		Namespace: "my-test-namespace",
+	}
 	clientSet := fake.NewSimpleClientset()
-	cert, _ := createSelfSignedCert(wh)
+	cert, _, err := createSelfSignedCert(wh)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = injectCAInMutatingWebhook(clientSet, wh.Name, cert)
+	if err == nil {
+		t.Fatal("No error raised but mutating webhook shouldn't have been found")
+	}
 
 	mutatingWebHookConfiguration := &admissionRegistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{Name: wh.Name},
@@ -56,7 +69,7 @@ func TestCAInjection(t *testing.T) {
 		}},
 	}
 
-	_, err := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Create(context.TODO(), mutatingWebHookConfiguration, metav1.CreateOptions{})
+	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Create(context.TODO(), mutatingWebHookConfiguration, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

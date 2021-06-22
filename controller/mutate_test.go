@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	admission "k8s.io/api/admission/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,9 +46,52 @@ func TestParseAndResolveInjectionDemand(t *testing.T) {
 	}
 	admissionReviewMarshaled, _ := json.Marshal(admissionReview)
 
-	podTemplate := parseAndResolveInjectionDemand(admissionReviewMarshaled, whTest)
-	if !podTemplate.Response.Allowed {
+	admissionResponse := parseAndResolveInjectionDemand(admissionReviewMarshaled, whTest)
+	if !admissionResponse.Response.Allowed {
 		t.Fatal("Error building Admission Response with non-mutable object")
+	}
+
+	deployTemplateSpec := appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-deploy-template",
+			Annotations: map[string]string{
+				"cert-manager.ssm.io/service-name": "Test",
+			},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-pod-template",
+					Annotations: map[string]string{
+						"cert-manager.ssm.io/service-name": "Test",
+					},
+				},
+			},
+		},
+	}
+	rawDeployTemplateSpec, _ := json.Marshal(deployTemplateSpec)
+	testObjectRawExtension = runtime.RawExtension{
+		Raw: rawDeployTemplateSpec,
+	}
+	admissionReview = admission.AdmissionReview{
+		Request: &admission.AdmissionRequest{
+			UID: "1",
+			Kind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+			Operation: "CREATE",
+			Namespace: "test-namespace",
+			Object:    testObjectRawExtension,
+		},
+	}
+	admissionReviewMarshaled, _ = json.Marshal(admissionReview)
+
+	admissionResponse = parseAndResolveInjectionDemand(admissionReviewMarshaled, whTest)
+	if admissionResponse.Response.Allowed != true {
+		t.Fatal("Problem with admission response not allowed")
+		t.Fatal(admissionResponse.Response)
 	}
 }
 

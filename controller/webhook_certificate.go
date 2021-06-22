@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
+func createSelfSignedCert(wh *webHook) ([]byte, []byte, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	pemPrivateKey := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
@@ -28,7 +28,7 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 
 	template := x509.Certificate{
@@ -51,18 +51,18 @@ func createSelfSignedCert(wh *webHook) ([]byte, []byte) {
 	pem.Encode(cert, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 
-	return cert.Bytes(), pemPrivateKey
+	return cert.Bytes(), pemPrivateKey, nil
 }
 
-func injectCAInMutatingWebhook(clientSet kubernetes.Interface, webHookName string, ca []byte) {
+func injectCAInMutatingWebhook(clientSet kubernetes.Interface, webHookName string, ca []byte) error {
 	var hashedCA = make([]byte, base64.StdEncoding.EncodedLen(len(ca)))
 
 	_, err := clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), webHookName, metav1.GetOptions{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	base64.StdEncoding.Encode(hashedCA, ca)
@@ -77,8 +77,9 @@ func injectCAInMutatingWebhook(clientSet kubernetes.Interface, webHookName strin
 	log.Info("Installing new certificate in ", webHookName, " mutating webhook configuration")
 	_, err = clientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Patch(context.TODO(), webHookName, types.JSONPatchType, newCAByte, metav1.PatchOptions{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 func writeCertsToHomeFolder(cert []byte, key []byte) (string, string) {

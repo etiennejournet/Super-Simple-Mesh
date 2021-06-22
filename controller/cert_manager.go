@@ -29,6 +29,11 @@ type certManagerMutationConfig struct {
 }
 
 func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
+	if objectName == "" || objectNamespace == "" {
+		err := errors.New("Unable to read object or namespace names from admission request")
+		return &certManagerMutationConfig{}, err
+	}
+
 	certificatesPath := "/var/run/ssm"
 
 	kubernetesClient, err := wh.createCertManagerClientSet()

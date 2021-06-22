@@ -13,15 +13,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	wh := newWebHook("ssm", ns, 8443, 777, kubClient())
+	client, err := kubClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	wh := newWebHook("ssm", ns, 8443, 777, client)
 
 	clientSet, err := wh.createKubernetesClientSet()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cert, key := createSelfSignedCert(&wh)
-	injectCAInMutatingWebhook(clientSet, wh.Name, cert)
+	cert, key, err := createSelfSignedCert(&wh)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = injectCAInMutatingWebhook(clientSet, wh.Name, cert)
+	if err != nil {
+		log.Fatal(err)
+	}
 	certPath, keyPath := writeCertsToHomeFolder(cert, key)
 
 	http.HandleFunc("/", wh.server)

@@ -1,37 +1,19 @@
 package main
 
 import (
-	"flag"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"strings"
 )
 
-func kubClient() *rest.Config {
-	//TODO: refacto this
-	kubeconfig := flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	flag.Parse()
-
-	if *kubeconfig == "" {
-		log.Info("Detected in cluster launch")
-		// creates the in-cluster config
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return config
-	}
-
-	// use the current context in kubeconfig
-	log.Info("Detected Kubeconfig flag")
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+func kubClient() (*rest.Config, error) {
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return config
+	return config, nil
 }
 
 func getCurrentNamespace() (string, error) {
