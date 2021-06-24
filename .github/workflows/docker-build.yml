@@ -2,7 +2,6 @@ on:
   pull_request:
     paths:
     - 'docker/sidecar/*'
-    types: ['opened', 'edited']
 name: Docker Build
 jobs:
   DockerBuild:
