@@ -2,6 +2,11 @@ on:
   pull_request:
     paths:
     - 'controller/*'
+  push:
+    paths:
+    - 'controller/*'
+    branch:
+    - 'master'
 
 name: Controller Integration
 jobs:
@@ -33,10 +38,17 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push
+    - name: Build and Push Release Candidate
+      if : ${{ github.ref != 'refs/heads/master' }}
       id: docker_build
       uses: docker/build-push-action@v2
       with:
         context: './controller'
-        push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
+    - name: Release Tagged Version
+      if : ${{ github.ref == 'refs/heads/master' }}
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: './controller'
+        tags: ${{ env.DOCKER_TAG }}
