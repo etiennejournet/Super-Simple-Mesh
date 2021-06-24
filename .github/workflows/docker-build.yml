@@ -24,4 +24,4 @@ jobs:
       with:
         context: './docker/sidecar'
         push: true
-        tags: '{{ secrets.DOCKERHUB_USERNAME }}/ssm-sidecar:rc-${{ github.run_id }}'
+        tags: '${{ secrets.DOCKERHUB_USERNAME }}/ssm-sidecar:rc-${{ github.run_id }}'
