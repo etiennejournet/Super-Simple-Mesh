@@ -24,4 +24,4 @@ jobs:
       with:
         context: './docker/sidecar'
 #        push: true
-        tags: rc-${{ github.sha }}
+        tags: rc-${{ github.run_id }}
