@@ -2,7 +2,7 @@ on:
   pull_request:
     paths:
     - 'docker/sidecar/*'
-name: Docker Build
+name: Sidecar Integration
 jobs:
   DockerBuild:
     env:
