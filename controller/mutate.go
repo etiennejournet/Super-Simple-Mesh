@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (admissionReview admission.AdmissionReview) {
+func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh webHookInterface) (admissionReview admission.AdmissionReview) {
 	json.Unmarshal(admissionReviewBody, &admissionReview)
 	patch := []patchValue{}
 	var patchType admission.PatchType = "JSONPatch"
@@ -31,7 +31,9 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 		)
 		if err == nil {
 			patch = mutationConfig.createJSONPatch()
-		}
+		} else {
+      log.Print(err)
+    }
 	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
 		log.Print("Patching demand for autocert received, not implemented yet")
 	}
@@ -51,20 +53,20 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh *webHook) (ad
 }
 
 func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionRequest) (v1.PodTemplateSpec, error) {
-	switch admissionRequest.Resource.Resource {
-	case "deployments":
+	switch admissionRequest.Kind.Kind {
+	case "Deployment":
 		var object appsv1.Deployment
 		err := json.Unmarshal(admissionRequest.Object.Raw, &object)
 		return object.Spec.Template, err
-	case "daemonsets":
+	case "DaemonSet":
 		var object appsv1.DaemonSet
 		err := json.Unmarshal(admissionRequest.Object.Raw, &object)
 		return object.Spec.Template, err
-	case "statefulsets":
+	case "StatefulSet":
 		var object appsv1.StatefulSet
 		err := json.Unmarshal(admissionRequest.Object.Raw, &object)
 		return object.Spec.Template, err
 	}
-	err := errors.New("this object is neither a deployment, a daemonset or a stateful set")
+	err := errors.New("this object is neither a deployment, a daemonset or a stateful set: " + admissionRequest.Kind.Kind)
 	return v1.PodTemplateSpec{}, err
 }
