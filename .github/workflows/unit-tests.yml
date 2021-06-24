@@ -2,6 +2,7 @@ on:
   pull_request:
     paths:
     - 'controller/*'
+    types: ['opened', 'edited']
 name: Unit Tests
 jobs:
   UnitTests:
