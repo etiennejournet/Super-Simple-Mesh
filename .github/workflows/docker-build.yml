@@ -21,4 +21,4 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: rc-${{ github.sha[0:8] }}
+        tags: rc-${{ github.sha }}
