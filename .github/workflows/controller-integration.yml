@@ -2,7 +2,8 @@ on:
   pull_request:
     paths:
     - 'controller/*'
-name: Unit Tests
+
+name: Controller Integration
 jobs:
   UnitTests:
     runs-on: ubuntu-20.04
