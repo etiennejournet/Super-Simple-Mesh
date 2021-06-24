@@ -23,5 +23,5 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: './docker/sidecar'
-#        push: true
+        push: true
         tags: rc-${{ github.run_id }}
