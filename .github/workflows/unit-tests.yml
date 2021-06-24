@@ -1,7 +1,7 @@
 on: [push, pull_request]
 name: Unit Tests
 jobs:
-  test:
+  UnitTests:
     runs-on: ubuntu-20.04
     steps:
     - name: Install Go
@@ -11,4 +11,4 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
-      run: go test controller/...
+      run: go test ./...
