@@ -1,8 +1,7 @@
 on:
-  push:
+  pull_request:
     paths:
     - 'controller/*'
-  pull_request:
 name: Unit Tests
 jobs:
   UnitTests:
