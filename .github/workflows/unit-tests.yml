@@ -4,8 +4,6 @@ on:
     - 'controller/*'
 name: Unit Tests
 jobs:
-  env:
-    IMAGE_NAME: "ssm-injector"
   UnitTests:
     runs-on: ubuntu-20.04
     steps:
@@ -19,6 +17,8 @@ jobs:
       run: go test ./...
 
   DockerBuild:
+    env:
+      IMAGE_NAME: "ssm-injector"
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
