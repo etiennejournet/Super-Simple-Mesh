@@ -32,8 +32,8 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh webHookInterf
 		if err == nil {
 			patch = mutationConfig.createJSONPatch()
 		} else {
-      log.Print(err)
-    }
+			log.Print(err)
+		}
 	} else if podTemplate.Annotations["autosidecar.ssm.io/enabled"] == "true" {
 		log.Print("Patching demand for autocert received, not implemented yet")
 	}
