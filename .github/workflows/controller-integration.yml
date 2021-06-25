@@ -3,10 +3,10 @@ on:
     paths:
     - 'controller/*'
   push:
-    paths:
-    - 'controller/*'
     branch:
     - 'master'
+    paths:
+    - 'controller/*'
 
 name: Controller Integration
 jobs:
