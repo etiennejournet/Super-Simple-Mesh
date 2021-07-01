@@ -16,7 +16,7 @@ runs:
   steps:
   - name: Check that Container version has been updated
     run: |
-      TAG=$(grep "LABEL TAG" {{ inputs.docker_context }}/Dockerfile | awk -F'=' '{print $2}')
+      TAG=$(grep "LABEL TAG" ${{ inputs.docker_context }}/Dockerfile | awk -F'=' '{print $2}')
       if $(docker manifest inspect ${{ inputs.docker_repo }}/${{ inputs.image_name }}:$TAG > /dev/null)
       then
         echo "Please update TAG number in Dockerfile"
