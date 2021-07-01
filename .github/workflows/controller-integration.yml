@@ -11,6 +11,7 @@ on:
 name: Controller Integration
 jobs:
   UnitTests:
+    if : ${{ github.ref != 'refs/heads/master' }}
     runs-on: ubuntu-20.04
     steps:
     - name: Install Go
