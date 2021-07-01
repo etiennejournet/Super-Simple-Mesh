@@ -4,6 +4,7 @@ COPY . .
 RUN go mod init ssm && go get -u ./... && go install -v ./...
 
 FROM alpine:3.13
+LABEL TAG=1.0.0
 ARG BIN_PATH=/usr/local/bin/
 COPY --from=builder /go/bin/ $BIN_PATH
 

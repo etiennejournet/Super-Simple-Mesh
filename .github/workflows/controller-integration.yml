@@ -47,6 +47,7 @@ jobs:
     - name: Check that Container version has been updated
       run: |
         TAG=$(grep "LABEL TAG" | awk -F'=' '{print $2}')
+        echo $TAG
         docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
