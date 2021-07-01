@@ -47,8 +47,7 @@ jobs:
     - name: Check that Container version has been updated
       run: |
         TAG=$(grep "LABEL TAG" controller/Dockerfile | awk -F'=' '{print $2}')
-        docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null
-        if ! $?
+        if ! $(docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null)
         then
           echo "Please update TAG number in Dockerfile"
           exit 1
