@@ -47,7 +47,14 @@ jobs:
     - name: Check that Container version has been updated
       run: |
         TAG=$(grep "LABEL TAG" controller/Dockerfile | awk -F'=' '{print $2}')
-        docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG && echo "Please Update Tag" && exit 1
+        docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null
+        if ! $?
+        then
+          echo "Please update TAG number in Dockerfile"
+          exit 1
+        else
+          exit 0
+        fi
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
