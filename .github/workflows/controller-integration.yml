@@ -38,14 +38,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and Push Release Candidate
-      if : ${{ github.ref != 'refs/heads/master' }}
-      uses: docker/build-push-action@v2
-      with:
-        context: './controller'
-        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
+#    - name: Build and Push Release Candidate
+#      if : ${{ github.ref != 'refs/heads/master' }}
+#      uses: docker/build-push-action@v2
+#      with:
+#        context: './controller'
+#        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Check that Container version has been updated
-      run: docker manifest inspect list
+      run: docker manifest inspect ${{ env.IMAGE_NAME }}:$(grep "LABEL TAG" | awk -F'=' '{print $2}')
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
