@@ -12,6 +12,7 @@ inputs:
     description: 'Name of the repository that we need to check'
     required: true
 runs:
+  using: "composite"
   steps:
   - name: Check that Container version has been updated
     run: |
