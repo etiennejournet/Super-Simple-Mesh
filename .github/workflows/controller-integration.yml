@@ -49,6 +49,7 @@ jobs:
       with:
         docker_context: 'controller'
         image_name: ${{ env.IMAGE_NAME }}
+        docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
