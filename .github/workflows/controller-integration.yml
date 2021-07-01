@@ -46,7 +46,7 @@ jobs:
 #        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Check that Container version has been updated
       run: |
-        TAG=$(grep "LABEL TAG" | awk -F'=' '{print $2}')
+        TAG=$(grep "LABEL TAG" controller/Dockerfile | awk -F'=' '{print $2}')
         echo $TAG
         docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG
     - name: Release Tagged Version
