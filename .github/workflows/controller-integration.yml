@@ -45,15 +45,10 @@ jobs:
 #        context: './controller'
 #        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Check that Container version has been updated
-      run: |
-        TAG=$(grep "LABEL TAG" controller/Dockerfile | awk -F'=' '{print $2}')
-        if ! $(docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null)
-        then
-          echo "Please update TAG number in Dockerfile"
-          exit 1
-        else
-          exit 0
-        fi
+      uses: ./.github/actions/check-docker-tag
+      with:
+        docker_context: 'controller'
+        image_name: ${{ env.IMAGE_NAME }}
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2

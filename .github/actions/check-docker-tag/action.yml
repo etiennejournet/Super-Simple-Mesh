@@ -1,0 +1,22 @@
+name: 'Check if Docker Tag was updated'
+description: 'Check if Docker Tag was updated'
+inputs:
+  docker_context:  # id of input
+    description: 'Context of Dockerfile'
+    required: true
+    default: '.'
+  image_name:  # id of input
+    description: 'Name of the Image that we need to check'
+    required: true
+runs:
+  steps:
+   - name: Check that Container version has been updated
+      run: |
+        TAG=$(grep "LABEL TAG" {{ inputs.docker-context }}/Dockerfile | awk -F'=' '{print $2}')
+        if $(docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null)
+        then
+          echo "Please update TAG number in Dockerfile"
+          exit 1
+        else
+          exit 0
+        fi
