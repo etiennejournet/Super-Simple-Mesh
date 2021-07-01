@@ -35,8 +35,9 @@ jobs:
         image_name: ${{ env.IMAGE_NAME }}
         docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Release Tagged Version
-#      if : ${{ github.ref == 'refs/heads/master' }}
+      if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
       with:
         context: './docker/sidecar'
-        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ steps.docker_tag.outputs.tag }}'
+        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.tag }}'
+        push: true
