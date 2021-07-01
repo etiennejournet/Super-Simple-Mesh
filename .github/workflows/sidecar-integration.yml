@@ -27,3 +27,15 @@ jobs:
         context: './docker/sidecar'
         push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
+    - name: Check that Container version has been updated
+      uses: ./.github/actions/check-docker-tag
+      with:
+        docker_context: 'docker/sidecar'
+        image_name: ${{ env.IMAGE_NAME }}
+        docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
+    - name: Release Tagged Version
+      if : ${{ github.ref == 'refs/heads/master' }}
+      uses: docker/build-push-action@v2
+      with:
+        context: './controller'
+        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'

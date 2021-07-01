@@ -1,5 +1,5 @@
 FROM envoyproxy/envoy-alpine:v1.18-latest
-LABEL tag=1.0.0
+LABEL TAG=1.0.0
 
 COPY resources/ /
 
