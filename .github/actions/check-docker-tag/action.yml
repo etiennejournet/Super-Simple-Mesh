@@ -1,5 +1,5 @@
-name: 'Check if Docker Tag was updated'
-description: 'Check if Docker Tag was updated'
+name: 'Check docker tag'
+description: 'Check if Docker Tag already exists in the docker registry'
 inputs:
   docker_context:  # id of input
     description: 'Context of Dockerfile'
@@ -8,15 +8,19 @@ inputs:
   image_name:  # id of input
     description: 'Name of the Image that we need to check'
     required: true
+  docker_repo:  # id of input
+    description: 'Name of the repository that we need to check'
+    required: true
 runs:
   steps:
   - name: Check that Container version has been updated
     run: |
-      TAG=$(grep "LABEL TAG" {{ inputs.docker-context }}/Dockerfile | awk -F'=' '{print $2}')
-      if $(docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG > /dev/null)
+      TAG=$(grep "LABEL TAG" {{ inputs.docker_context }}/Dockerfile | awk -F'=' '{print $2}')
+      if $(docker manifest inspect ${{ inputs.docker_repo }}/${{ inputs.image_name }}:$TAG > /dev/null)
       then
         echo "Please update TAG number in Dockerfile"
         exit 1
       else
         exit 0
       fi
+    shell: bash
