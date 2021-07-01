@@ -45,7 +45,9 @@ jobs:
 #        context: './controller'
 #        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Check that Container version has been updated
-      run: docker manifest inspect ${{ env.IMAGE_NAME }}:$(grep "LABEL TAG" | awk -F'=' '{print $2}')
+      run: |
+        TAG=$(grep "LABEL TAG" | awk -F'=' '{print $2}')
+        docker manifest inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG
     - name: Release Tagged Version
       if : ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
