@@ -45,7 +45,7 @@ jobs:
 #        context: './controller'
 #        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Check that Container version has been updated
-      uses: .github/actions/check-docker-tag
+      uses: ./.github/actions/check-docker-tag
       with:
         docker_context: 'controller'
         image_name: ${{ env.IMAGE_NAME }}
