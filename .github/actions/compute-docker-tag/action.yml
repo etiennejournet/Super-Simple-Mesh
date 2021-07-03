@@ -1,0 +1,33 @@
+name: 'Compute docker tag'
+description: 'Compute Docker Tag and returns error if the tag already exists in the docker registry'
+inputs:
+  docker_context:
+    description: 'Context of Dockerfile'
+    required: true
+    default: '.'
+  image_name:
+    description: 'Name of the Image for verifying tag against registry'
+    required: true
+  docker_repo:
+    description: 'Name of the repository where we need to check'
+    required: true
+outputs:
+  docker_tag:
+    description: "Docker Tag"
+    value: ${{ steps.docker_tag.outputs.docker_tag }}
+runs:
+  using: "composite"
+  steps:
+  - name: Check that Container version has been updated
+    id: docker_tag
+    run: |
+      TAG=$(grep "LABEL TAG" ${{ inputs.docker_context }}/Dockerfile | awk -F'=' '{print $2}')
+      if $(docker manifest inspect ${{ inputs.docker_repo }}/${{ inputs.image_name }}:$TAG > /dev/null)
+      then
+        echo "Please update TAG number in Dockerfile"
+        exit 1
+      else
+        echo "::set-output name=docker_tag::$(echo $TAG)"
+        exit 0
+      fi
+    shell: bash
