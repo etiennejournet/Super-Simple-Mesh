@@ -1,15 +1,15 @@
-name: 'Check docker tag'
-description: 'Check if Docker Tag already exists in the docker registry'
+name: 'Compute docker tag'
+description: 'Compute Docker Tag and returns error if the tag already exists in the docker registry'
 inputs:
-  docker_context:  # id of input
+  docker_context:
     description: 'Context of Dockerfile'
     required: true
     default: '.'
-  image_name:  # id of input
-    description: 'Name of the Image that we need to check'
+  image_name:
+    description: 'Name of the Image for verifying tag against registry'
     required: true
-  docker_repo:  # id of input
-    description: 'Name of the repository that we need to check'
+  docker_repo:
+    description: 'Name of the repository where we need to check'
     required: true
 outputs:
   random-number:
