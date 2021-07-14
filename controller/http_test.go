@@ -13,7 +13,7 @@ func TestHttpServer(t *testing.T) {
 	wh := &webHook{
 		Name:      "my-test-webhook",
 		Namespace: "my-test-namespace",
-		EnvoyUID:  777,
+		EnvoyUID:  "777",
 	}
 	req := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()

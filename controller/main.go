@@ -9,15 +9,15 @@ import (
 )
 
 func main() {
-	ns, err := getCurrentNamespace()
-	if err != nil {
-		log.Fatal(err)
-	}
 	client, err := kubClient()
 	if err != nil {
 		log.Fatal(err)
 	}
-	wh := newWebHook("ssm", ns, 8443, 777, client)
+
+	wh, err := newWebHook(client)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	clientSet, err := wh.createKubernetesClientSet()
 	if err != nil {

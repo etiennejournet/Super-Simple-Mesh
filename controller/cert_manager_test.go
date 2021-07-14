@@ -19,7 +19,7 @@ type webHookTest struct {
 func (wh *webHookTest) createCertManagerClientSet() (certManagerClient.Interface, error) {
 	clientSet := certManagerTesting.NewSimpleClientset()
 	readyClusterIssuer := &certmanager.ClusterIssuer{
-		ObjectMeta: metav1.ObjectMeta{Name: "ca-issuer"},
+		ObjectMeta: metav1.ObjectMeta{Name: "test-issuer"},
 		Spec: certmanager.IssuerSpec{
 			IssuerConfig: certmanager.IssuerConfig{},
 		},
@@ -67,9 +67,10 @@ func (wh *webHookTest) createCertManagerClientSet() (certManagerClient.Interface
 func TestNewCertManagerMutationConfig(t *testing.T) {
 	whTest := &webHookTest{
 		&webHook{
-			Name:       "my-test-webhook",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "my-test-webhook",
+			EnvoyUID:          "777",
+			CertManagerIssuer: "test-issuer",
+			RestConfig:        &rest.Config{},
 		},
 	}
 	podTemplateSpec := corev1.PodTemplateSpec{
@@ -80,12 +81,16 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	whTest = &webHookTest{
+		&webHook{
+			Name:       "my-test-webhook",
+			EnvoyUID:   "777",
+			RestConfig: &rest.Config{},
+		},
+	}
 	podTemplateSpec = corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-pod-template",
-			Annotations: map[string]string{
-				"cert-manager.ssm.io/cluster-issuer": "test-issuer",
-			},
 		},
 	}
 	_, err = newCertManagerMutationConfig(whTest, "my-test-object", "my-test-namespace", podTemplateSpec)
@@ -95,9 +100,10 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 
 	whTest = &webHookTest{
 		&webHook{
-			Name:       "test-object-fails",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "test-object-fails",
+			EnvoyUID:          "777",
+			CertManagerIssuer: "test-issuer",
+			RestConfig:        &rest.Config{},
 		},
 	}
 	_, err = newCertManagerMutationConfig(whTest, "my-test-object", "my-test-namespace", podTemplateSpec)
@@ -109,9 +115,10 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 func TestNewCreateCertificateRequest(t *testing.T) {
 	whTest := &webHookTest{
 		&webHook{
-			Name:       "my-test-webhook",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "my-test-webhook",
+			EnvoyUID:          "777",
+			CertManagerIssuer: "test-issuer",
+			RestConfig:        &rest.Config{},
 		},
 	}
 	podTemplateSpec := corev1.PodTemplateSpec{
@@ -129,9 +136,10 @@ func TestNewCreateCertificateRequest(t *testing.T) {
 
 	whTest = &webHookTest{
 		&webHook{
-			Name:       "test-certificate-exists",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "test-certificate-exists",
+			EnvoyUID:          "777",
+			CertManagerIssuer: "test-issuer",
+			RestConfig:        &rest.Config{},
 		},
 	}
 	podTemplateSpec = corev1.PodTemplateSpec{
@@ -149,9 +157,10 @@ func TestNewCreateCertificateRequest(t *testing.T) {
 
 	whTest = &webHookTest{
 		&webHook{
-			Name:       "test-certificate-exists-no-labels",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "test-certificate-exists-no-labels",
+			EnvoyUID:          "777",
+			RestConfig:        &rest.Config{},
+			CertManagerIssuer: "test-issuer",
 		},
 	}
 	podTemplateSpec = corev1.PodTemplateSpec{
@@ -215,9 +224,10 @@ func TestCheckClusterIssuerExistsAndReady(t *testing.T) {
 func TestCreateJSONPatch(t *testing.T) {
 	whTest := &webHookTest{
 		&webHook{
-			Name:       "my-test-webhook",
-			EnvoyUID:   777,
-			RestConfig: &rest.Config{},
+			Name:              "my-test-webhook",
+			EnvoyUID:          "777",
+			RestConfig:        &rest.Config{},
+			CertManagerIssuer: "test-issuer",
 		},
 	}
 	podTemplateSpec := corev1.PodTemplateSpec{
