@@ -1,5 +1,6 @@
 
 # Super Simple Mesh
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-81%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 A very simple service mesh providing only inter-services TLS.
 Super Simple Mesh is useful for teams who just want to encrypt flows between their containers without bothering with the extra features and complexity a classic Service Mesh brings
