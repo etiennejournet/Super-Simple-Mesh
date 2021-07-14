@@ -14,7 +14,7 @@ const (
 	defaultWebHookName       = "ssm"
 	defaultWebHookPort       = 8443
 	defaultEnvoyUserUID      = "777"
-	defaultCertManagerIssuer = "caIssuer"
+	defaultCertManagerIssuer = "ca-issuer"
 )
 
 type webHook struct {

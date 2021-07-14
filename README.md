@@ -20,7 +20,7 @@ kubectl apply -f Super-Simple-Mesh/deploy/manifest
 Super Simple Mesh is configured using environnement variables 
 | Environnement Variable | Description | Required| Default |
 |--|--|--|--|
-| CERTMANAGER_ISSUER | Issuer that should be used for delivering certificates. For now SSM only supports ClusterIssuers | No | 777
+| CERTMANAGER_ISSUER | Issuer that should be used for delivering certificates. For now SSM only supports ClusterIssuers | No | ca-issuer
 | WEBHOOK_NAME | Name of the SSM service (only useful if you changed it in the YAML manifest) | No | ssm
 | WEBHOOK_PORT | Port of the SSM service (only useful if you changed it in the YAML manifest) | No | 8080
 | ENVOY_UID | User ID of the Envoy Proxy User, change it to a unique value if the default is already used | No | 777 
