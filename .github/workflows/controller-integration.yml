@@ -45,6 +45,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: './controller'
+        push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Compute Docker Tag
       id: docker_tag
