@@ -1,7 +1,7 @@
 FROM golang:1.16-alpine as builder
 WORKDIR /go/src/ssm
 COPY . .
-RUN go mod init ssm && go get -u ./... && go install -v ./...
+RUN go install -v ./...
 
 FROM alpine:3.13
 LABEL TAG=0.2.0
