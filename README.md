@@ -17,7 +17,7 @@ kubectl apply -f Super-Simple-Mesh/deploy/manifest
 
 ### Configuration 
 
-Super Simple Mesh is configured with environnement variables 
+Super Simple Mesh is configured using environnement variables 
 | Environnement Variable | Description | Required| Default |
 |--|--|--|--|
 | CERTMANAGER_ISSUER | Issuer that should be used for delivering certificates. For now SSM only supports ClusterIssuers | No | 777
@@ -37,6 +37,6 @@ Note that SSM will use a Cluster Issuer called "caIssuer" by default, refer to t
 #### Annotations 
 | Annotation Name | Description | Required| Default |
 |--|--|--|--|
-| cert-manager.ssm.io/service-name | Name of the Service for which your pods are going to be certified for | Yes | None
+| cert-manager.ssm.io/service-name | Name of the Service for which the pods should be certified for | Yes | None
 | cert-manager.ssm.io/cert-duration | Duration of the requested certificate | No | 24h 
 
