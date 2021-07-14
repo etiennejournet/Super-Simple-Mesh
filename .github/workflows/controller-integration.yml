@@ -1,7 +1,4 @@
 on:
-  pull_request:
-    paths:
-    - 'controller/*'
   push:
     branch:
     - 'master'
