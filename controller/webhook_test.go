@@ -8,13 +8,13 @@ import (
 )
 
 func TestNewWebHook(t *testing.T) {
-//	wh := &webHook{
-//		Name:       defaultWebHookName,
-//		Namespace:  "test-namespace",
-//		Port:       defaultWebHookPort,
-//		RestConfig: &rest.Config{},
-//		EnvoyUID:   defaultEnvoyUserUID,
-//	}
+	//	wh := &webHook{
+	//		Name:       defaultWebHookName,
+	//		Namespace:  "test-namespace",
+	//		Port:       defaultWebHookPort,
+	//		RestConfig: &rest.Config{},
+	//		EnvoyUID:   defaultEnvoyUserUID,
+	//	}
 	_, err := newWebHook(&rest.Config{})
 	if err == nil {
 		t.Fatal("Should throw error when looking for namespace")
@@ -27,12 +27,12 @@ func TestNewWebHook(t *testing.T) {
 	}
 	os.Setenv("WEBHOOK_PORT", "8080")
 	defer os.Unsetenv("WEBHOOK_PORT")
-  _, err = newWebHook(&rest.Config{})
+	_, err = newWebHook(&rest.Config{})
 	if err != nil {
 		t.Fatal("Unexpected error -", err)
 	}
 	os.Setenv("WEBHOOK_PORT", "test")
-  _, err = newWebHook(&rest.Config{})
+	_, err = newWebHook(&rest.Config{})
 	if err == nil {
 		t.Fatal("Should have returned error, port is not an int")
 	}
