@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultWebHookName       = "ssm"
-	defaultWebHookPort       = 8080
+	defaultWebHookPort       = 8443
 	defaultEnvoyUserUID      = "777"
 	defaultCertManagerIssuer = "caIssuer"
 )
