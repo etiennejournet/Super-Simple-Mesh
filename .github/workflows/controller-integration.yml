@@ -58,3 +58,12 @@ jobs:
         context: './controller'
         push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
+
+  IntegrationTesting:
+    if : github.ref != 'refs/heads/master'
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - run: |
+        cd ./test &&  ./e2e.sh
