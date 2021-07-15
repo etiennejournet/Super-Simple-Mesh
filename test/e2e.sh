@@ -10,7 +10,7 @@ kubectl create ns super-simple-mesh
 ## Setup Cert-Manager using Helm
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm install cert-manager jetstack/cert-manager --set installCRDs=true -n super-simple-mesh
+helm install cert-manager jetstack/cert-manager --set installCRDs=true -n super-simple-mesh --wait
 
 ## Setup SSM
 kubectl apply -f ../deploy/manifest
