@@ -1,7 +1,4 @@
 on:
-  pull_request:
-    paths:
-    - 'docker/sidecar/*'
   push:
     branch:
     - 'master'
