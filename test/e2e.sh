@@ -15,4 +15,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo update
 helm install cert-manager jetstack/cert-manager --set installCRDs=true -n super-simple-mesh
 
+## Setup ClusterIssuer
+kubectl apply -f ./manifest/clusterissuer.yml
+
 go test -v
