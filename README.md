@@ -31,7 +31,7 @@ Super Simple Mesh is configured using environnement variables
 #### Basic setup
 Setup Cert-Manager, using helm for example :
 
-    helm install jetstack/cert-manager
+    helm install cert-manager jetstack/cert-manager -n cert-manager
 
 Define a CA Cluster Issuer according to [this documentation.](https://cert-manager.io/docs/configuration/ca/)
 Note that SSM will use a Cluster Issuer called "caIssuer" by default, refer to the annotation list for another behavior
