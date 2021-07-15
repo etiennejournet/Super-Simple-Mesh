@@ -13,7 +13,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/client-go/rest"
 )
 
 type certManagerMutationConfig struct {
@@ -28,34 +27,42 @@ type certManagerMutationConfig struct {
 	KubernetesClient           certManagerClient.Interface
 }
 
+const (
+	defaultCertificatesPath  = "/var/run/ssm"
+	defaultCertDuration      = "24h"
+	defaultCertRenewalPeriod = "20h"
+)
+
 func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	if objectName == "" || objectNamespace == "" {
 		err := errors.New("Unable to read object or namespace names from admission request")
 		return &certManagerMutationConfig{}, err
 	}
 
-	certificatesPath := "/var/run/ssm"
+	certificatesPath := defaultCertificatesPath
 
 	kubernetesClient, err := wh.createCertManagerClientSet()
 	if err != nil {
 		return &certManagerMutationConfig{}, err
 	}
 
-	// Define the ClusterIssuer for cert-manager according to the annotation or default
-	caIssuer := podTemplate.Annotations["cert-manager.ssm.io/cluster-issuer"]
-	if caIssuer == "" {
-		caIssuer = "ca-issuer"
-	}
-	err = checkClusterIssuerExistsAndReady(kubernetesClient, caIssuer)
+	certManagerIssuer := wh.getCertManagerIssuer()
+	err = checkClusterIssuerExistsAndReady(kubernetesClient, certManagerIssuer)
 	if err != nil {
 		return &certManagerMutationConfig{}, err
 	}
 
+	// Define the Certificate and Key Path
+	certPath := podTemplate.Annotations["cert-manager.ssm.io/cert-path"]
+	if certPath == "" {
+		certPath = defaultCertificatesPath
+	}
+
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
-	renewBefore := "20h"
+	renewBefore := defaultCertRenewalPeriod
 	if certDuration == "" {
-		certDuration = "24h"
+		certDuration = defaultCertDuration
 	}
 	certDurationParsed, _ := time.ParseDuration(certDuration)
 	renewBeforeParsed, _ := time.ParseDuration(renewBefore)
@@ -79,7 +86,7 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 				RenewBefore: &metav1.Duration{renewBeforeParsed},
 				SecretName:  wh.getName() + "-cert-" + objectName,
 				IssuerRef: metacertmanager.ObjectReference{
-					Name: caIssuer,
+					Name: certManagerIssuer,
 					// SSM only support one mesh for now
 					Kind: "ClusterIssuer",
 				},

@@ -1,7 +1,4 @@
 on:
-  pull_request:
-    paths:
-    - 'controller/*'
   push:
     branch:
     - 'master'
@@ -21,7 +18,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
-      run: go test ./...
+      run: |
+        cd controller && go test ./...
 
   DockerBuild:
     env:
@@ -40,10 +38,11 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and Push Release Candidate
-      if : ${{ github.ref != 'refs/heads/master' }}
+      if : github.ref != 'refs/heads/master'
       uses: docker/build-push-action@v2
       with:
         context: './controller'
+        push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
     - name: Compute Docker Tag
       id: docker_tag
@@ -53,7 +52,7 @@ jobs:
         image_name: ${{ env.IMAGE_NAME }}
         docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Release Tagged Version
-      if : ${{ github.ref == 'refs/heads/master' }}
+      if : github.ref == 'refs/heads/master'
       uses: docker/build-push-action@v2
       with:
         context: './controller'

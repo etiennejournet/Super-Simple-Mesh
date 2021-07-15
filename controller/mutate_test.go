@@ -16,7 +16,7 @@ func TestParseAndResolveInjectionDemand(t *testing.T) {
 	whTest := &webHookTest{
 		&webHook{
 			Name:     "my-test-webhook",
-			EnvoyUID: 777,
+			EnvoyUID: "777",
 		},
 	}
 	podTemplateSpec := v1.PodTemplateSpec{
