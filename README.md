@@ -41,4 +41,4 @@ Note that SSM will use a Cluster Issuer called "caIssuer" by default, refer to t
 |--|--|--|--|
 | cert-manager.ssm.io/service-name | Name of the Service for which the pods should be certified for | Yes | None
 | cert-manager.ssm.io/cert-duration | Duration of the requested certificate | No | 24h 
-
+| cert-manager.ssm.io/cert-path | Path in which to put the requested certificate | No | 

@@ -28,7 +28,9 @@ type certManagerMutationConfig struct {
 }
 
 const (
-	defaultCertificatesPath = "/var/run/ssm"
+	defaultCertificatesPath  = "/var/run/ssm"
+	defaultCertDuration      = "24h"
+	defaultCertRenewalPeriod = "20h"
 )
 
 func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
@@ -50,11 +52,17 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 		return &certManagerMutationConfig{}, err
 	}
 
+	// Define the Certificate and Key Path
+	certPath := podTemplate.Annotations["cert-manager.ssm.io/cert-path"]
+	if certPath == "" {
+		certPath = defaultCertificatesPath
+	}
+
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
-	renewBefore := "20h"
+	renewBefore := defaultCertRenewalPeriod
 	if certDuration == "" {
-		certDuration = "24h"
+		certDuration = defaultCertDuration
 	}
 	certDurationParsed, _ := time.ParseDuration(certDuration)
 	renewBeforeParsed, _ := time.ParseDuration(renewBefore)
