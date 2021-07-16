@@ -2,8 +2,6 @@ on:
   push:
     branch:
     - 'master'
-    paths:
-    - 'test/*'
 
 name: Mesh Tests
 jobs:
