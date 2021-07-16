@@ -14,7 +14,7 @@ import (
 	//"github.com/gruntwork-io/terratest/modules/random"
 )
 
-func TestKubernetesBasicExample(t *testing.T) {
+func TestSimpleMeshCommunications(t *testing.T) {
 	ssmNamespace := "super-simple-mesh"
 	kubeconfig := "/etc/rancher/k3s/k3s.yaml"
 	options := k8s.NewKubectlOptions("", kubeconfig, ssmNamespace)
@@ -32,5 +32,12 @@ func TestKubernetesBasicExample(t *testing.T) {
 
 	options = k8s.NewKubectlOptions("", kubeconfig, "default")
 	k8s.KubectlApply(t, options, "manifest/nginx.yml")
-	//k8s.KubectlDelete(t, options, "manifest/deploy.yml")
+	k8s.KubectlApply(t, options, "manifest/test-simple-mtls.yml")
+  k8s.WaitUntilNumPodsCreated(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection",}, 1, 5, 2)
+  for i := 0; k8s.ListPods(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection",})[0].Status.Phase != "Running" && i < 20; i++ {
+    time.Sleep(2 * time.Second)
+  }
+  if k8s.ListPods(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection",})[0].Status.Phase != "Running" {
+    t.Fatal("")
+  }
 }

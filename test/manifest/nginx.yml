@@ -39,3 +39,20 @@ spec:
     targetPort: 80
   selector:
     app: nginx
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-different-port
+  name: nginx-different-port
+  namespace: default
+spec:
+  ports:
+  - name: 80-80
+    port: 8000
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
