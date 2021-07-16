@@ -59,11 +59,3 @@ jobs:
         push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
 
-  IntegrationTesting:
-    if : github.ref != 'refs/heads/master'
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - run: |
-        cd ./test &&  ./e2e.sh
