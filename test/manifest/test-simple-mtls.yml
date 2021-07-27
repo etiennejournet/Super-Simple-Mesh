@@ -14,13 +14,12 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
+          wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
           sleep 5;
           echo "Test external connection";
           wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
-          echo -e  "\n";
           echo "Test connection to nginx service on http port";
           wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
-          echo -e "\n";
           echo "Test connection to nginx service on 8000 port";
           wget -qO- -T3 nginx-different-port.default.svc.cluster.local:8000;
           if [ $? == 0 ]
