@@ -23,7 +23,7 @@ spec:
         args:
         - |
           echo "Test external connection";
-          wget -qO- -T3 google.fr > /dev/null 2>&1 || exit 1;
+          wget -qO- -T3 googler.fr > /dev/null 2>&1 || exit 1;
           echo -e  "\n"
           echo "Test connection to nginx service on http port";
           wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
