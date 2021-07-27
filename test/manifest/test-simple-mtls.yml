@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pi
+  name: test-simple-mtls
 spec:
   template:
     metadata:
@@ -9,7 +9,7 @@ spec:
         cert-manager.ssm.io/service-name: "test"
     spec:
       containers:
-      - name: pi
+      - name: test-simple-mtls
         image: alpine:latest
         command: ["/bin/sh", "-c"]
         args:
