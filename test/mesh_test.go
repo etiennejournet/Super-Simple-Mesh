@@ -27,6 +27,7 @@ func TestSimpleMeshCommunications(t *testing.T) {
 		time.Sleep(2 * time.Second)
 	}
 	if k8s.ListPods(t, options, listOptions)[0].Status.Phase != "Running" {
+    t.Log(k8s.ListPods(t, options, listOptions))
 		t.Fatal("SSM not properly launched")
 	}
 
