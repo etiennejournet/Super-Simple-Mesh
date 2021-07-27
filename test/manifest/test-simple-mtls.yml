@@ -14,21 +14,22 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
-          wget -qO- -T3 google.toto || exit 1;
-          sleep 5;
-          echo "Test external connection";
-          wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
-          echo "Test connection to nginx service on http port";
-          wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
-          echo "Test connection to nginx service on 8000 port";
-          wget -qO- -T3 nginx-different-port.default.svc.cluster.local:8000;
-          if [ $? == 0 ]
-          then
-            echo "Error, connection shouldn't have worked";
-            exit 1;
-          fi
-          envoy_proxy_pid=$(pgrep envoy);
-          kill -INT $envoy_proxy_pid;
+          sleep 5 && exit 1
+#          wget -qO- -T3 google.toto || exit 1;
+#          sleep 5;
+#          echo "Test external connection";
+#          wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
+#          echo "Test connection to nginx service on http port";
+#          wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
+#          echo "Test connection to nginx service on 8000 port";
+#          wget -qO- -T3 nginx-different-port.default.svc.cluster.local:8000;
+#          if [ $? == 0 ]
+#          then
+#            echo "Error, connection shouldn't have worked";
+#            exit 1;
+#          fi
+#          envoy_proxy_pid=$(pgrep envoy);
+#          kill -INT $envoy_proxy_pid;
         securityContext:
           capabilities:
             add:
