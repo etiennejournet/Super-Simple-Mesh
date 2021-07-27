@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    metadata:
+      annotations:
+        cert-manager.ssm.io/service-name: "test"
+    spec:
+      containers:
+      - name: pi
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          sleep 5
+          echo "Test external connection";
+          wget -qO- -T3 google.fr > /dev/null 2>&1 || exit 1;
+          echo -e  "\n"
+          echo "Test connection to nginx service on http port";
+          wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
+          echo -e "\n";
+          echo "Test connection to nginx service on 8000 port";
+          wget -qO- -T3 nginx-different-port.default.svc.cluster.local:8000
+          if [ $? == 0 ]
+          then
+            echo "Error, connection shouldn't have worked";
+            exit 1
+          fi
+          envoy_proxy_pid=$(pgrep envoy);
+          kill -INT $envoy_proxy_pid;
+        securityContext:
+          capabilities:
+            add:
+            - SYS_PTRACE
+      restartPolicy: Never
+      shareProcessNamespace: true
+  backoffLimit: 4

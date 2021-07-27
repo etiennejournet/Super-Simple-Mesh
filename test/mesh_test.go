@@ -34,13 +34,6 @@ func TestSimpleMeshCommunications(t *testing.T) {
 	options = k8s.NewKubectlOptions("", kubeconfig, "default")
 	k8s.KubectlApply(t, options, "manifest/nginx.yml")
 	k8s.KubectlApply(t, options, "manifest/test-simple-mtls.yml")
-	k8s.WaitUntilNumPodsCreated(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection"}, 1, 5, 2)
-	for i := 0; i < 20; i++ {
-		if k8s.ListPods(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection"})[0].Status.Phase != "Running" {
-			time.Sleep(2 * time.Second)
-		}
-	}
-	if k8s.ListPods(t, options, metav1.ListOptions{LabelSelector: "app=test-simple-mtls-connection"})[0].Status.Phase != "Running" {
-		t.Fatal("")
-	}
+  retriesDuration, _ := time.ParseDuration("2s")
+  k8s.WaitUntilJobSucceed(t, kubectlOptions, "test-simple-mtls", 10, retriesDuration)
 }
