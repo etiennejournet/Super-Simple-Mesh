@@ -1,29 +1,22 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: test-simple-mtls-connection
-  labels:
-    app: test-simple-mtls-connection
+  name: pi
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: test-simple-mtls-connection
   template:
     metadata:
-      labels:
-        app: test-simple-mtls-connection
       annotations:
-        cert-manager.ssm.io/service-name: "test-simple-mtls-connection.default.svc.cluster.local"
+        cert-manager.ssm.io/service-name: "test"
     spec:
       containers:
-      - name: alpine
+      - name: pi
         image: alpine:latest
         command: ["/bin/sh", "-c"]
         args:
         - |
+          sleep 5
           echo "Test external connection";
-          wget -qO- -T3 googler.fr > /dev/null 2>&1 || exit 1;
+          wget -qO- -T3 google.fr > /dev/null 2>&1 || exit 1;
           echo -e  "\n"
           echo "Test connection to nginx service on http port";
           wget -qO- -T3 nginx.default.svc.cluster.local || exit 1;
@@ -35,5 +28,12 @@ spec:
             echo "Error, connection shouldn't have worked";
             exit 1
           fi
-        ports:
-        - containerPort: 80
+          envoy_proxy_pid=$(pgrep envoy);
+          kill -INT $envoy_proxy_pid;
+        securityContext:
+          capabilities:
+            add:
+            - SYS_PTRACE
+      restartPolicy: Never
+      shareProcessNamespace: true
+  backoffLimit: 4

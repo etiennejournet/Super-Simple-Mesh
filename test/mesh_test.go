@@ -10,6 +10,7 @@ import (
 	//"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/k8s"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"github.com/gruntwork-io/terratest/modules/random"
 )
@@ -35,5 +36,5 @@ func TestSimpleMeshCommunications(t *testing.T) {
 	k8s.KubectlApply(t, options, "manifest/nginx.yml")
 	k8s.KubectlApply(t, options, "manifest/test-simple-mtls.yml")
   retriesDuration, _ := time.ParseDuration("2s")
-  k8s.WaitUntilJobSucceed(t, kubectlOptions, "test-simple-mtls", 10, retriesDuration)
+  k8s.WaitUntilJobSucceed(t, options, "test-simple-mtls", 10, retriesDuration)
 }
