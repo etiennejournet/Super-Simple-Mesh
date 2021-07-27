@@ -14,7 +14,7 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
-          wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
+          wget -qO- -T3 google.toto || exit 1;
           sleep 5;
           echo "Test external connection";
           wget -qO- -T3 google.toto > /dev/null 2>&1 || exit 1;
