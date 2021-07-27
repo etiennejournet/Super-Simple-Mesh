@@ -17,9 +17,9 @@ webhooks:
         path: "/"
     rules:
       - operations: ["CREATE","UPDATE"]
-        apiGroups: ["apps"]
+        apiGroups: ["apps", "batch"]
         apiVersions: ["v1"]
-        resources: ["deployments", "statefulsets", "daemonsets"]
+        resources: ["deployments", "statefulsets", "daemonsets", "jobs"]
     objectSelector:
       matchExpressions:
       - key: app

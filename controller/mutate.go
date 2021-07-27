@@ -7,6 +7,7 @@ import (
 
 	admission "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -64,6 +65,10 @@ func getPodTemplateFromAdmissionRequest(admissionRequest *admission.AdmissionReq
 		return object.Spec.Template, err
 	case "StatefulSet":
 		var object appsv1.StatefulSet
+		err := json.Unmarshal(admissionRequest.Object.Raw, &object)
+		return object.Spec.Template, err
+	case "Job":
+		var object batchv1.Job
 		err := json.Unmarshal(admissionRequest.Object.Raw, &object)
 		return object.Spec.Template, err
 	}
