@@ -167,6 +167,27 @@ func TestGetPodTemplateFromAdmissionRequest(t *testing.T) {
 		t.Fatal("Wrong return type")
 	}
 
+	admissionRequestForJob := &admission.AdmissionRequest{
+		UID: "1",
+		Kind: metav1.GroupVersionKind{
+			Group:   "batch",
+			Version: "v1",
+			Kind:    "Job",
+		},
+		Operation: "CREATE",
+		Namespace: "test-namespace",
+		Object:    testObjectRawExtension,
+	}
+	podTemplate, err = getPodTemplateFromAdmissionRequest(admissionRequestForJob)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if reflect.TypeOf(podTemplate).String() != "v1.PodTemplateSpec" {
+		t.Fatal("Wrong return type")
+	}
+
 	admissionRequestForOther := &admission.AdmissionRequest{
 		UID: "1",
 		Kind: metav1.GroupVersionKind{
