@@ -58,4 +58,3 @@ jobs:
         context: './controller'
         push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
-

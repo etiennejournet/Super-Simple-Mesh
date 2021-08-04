@@ -1,18 +1,12 @@
 package test
 
 import (
-	//"fmt"
-	//"path/filepath"
-	//"strings"
-	//
 	"testing"
 	"time"
-	//"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/k8s"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"github.com/gruntwork-io/terratest/modules/random"
 )
 
 func TestSimpleMeshCommunications(t *testing.T) {
