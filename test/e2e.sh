@@ -20,4 +20,5 @@ kubectl apply -f ./manifest/clusterissuer.yml
 
 go test -v
 
-kubectl delete -f ./manifest/clusterissuer.yml
+## Delete Manifest for local testing
+kubectl delete -f ../deploy/manifest
