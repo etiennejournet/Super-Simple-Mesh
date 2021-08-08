@@ -29,6 +29,6 @@ func TestSimpleMeshCommunications(t *testing.T) {
 	options = k8s.NewKubectlOptions("", kubeconfig, "default")
 	k8s.KubectlApply(t, options, "manifest/nginx.yml")
 	k8s.KubectlApply(t, options, "manifest/test-simple-mtls.yml")
-  retriesDuration, _ := time.ParseDuration("2s")
-  k8s.WaitUntilJobSucceed(t, options, "test-simple-mtls", 10, retriesDuration)
+	retriesDuration, _ := time.ParseDuration("2s")
+	k8s.WaitUntilJobSucceed(t, options, "test-simple-mtls", 10, retriesDuration)
 }
