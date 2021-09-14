@@ -67,7 +67,7 @@ jobs:
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
         push: true
 
-  UnitTests:
+  ControllerUnitTests:
     needs: DetectFilesChanges
     if : |
       ${{ github.ref != 'refs/heads/master' }} &&
@@ -84,7 +84,7 @@ jobs:
       run: |
         cd controller && go test ./...
 
-  DockerBuild:
+  ControllerDockerBuild:
     needs: DetectFilesChanges
     if:  ${{ needs.DetectFilesChanges.controller_changes }}
     env:
@@ -125,3 +125,16 @@ jobs:
         context: './controller'
         push: true
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
+
+  EndToEndTesting:
+    needs:
+    - SidecarIntegration
+    - ControllerUnitTests
+    - ControllerDockerBuild
+    if : github.ref != 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - run: |
+        cd ./test &&  ./e2e.sh
