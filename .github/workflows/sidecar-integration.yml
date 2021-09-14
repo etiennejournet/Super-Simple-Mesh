@@ -69,9 +69,7 @@ jobs:
 
   ControllerUnitTests:
     needs: DetectFilesChanges
-    if : |
-      ${{ github.ref != 'refs/heads/master' }} &&
-      ${{ needs.DetectFilesChanges.controller_changes }}
+    if : ${{ github.ref != 'refs/heads/master' }} && ${{ needs.DetectFilesChanges.controller_changes }}
     runs-on: ubuntu-20.04
     steps:
     - name: Install Go
