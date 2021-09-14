@@ -129,6 +129,7 @@ jobs:
     - SidecarIntegration
     - ControllerDockerBuild
     if : |
+      always() && 
       needs.ControllerDockerBuild.result != 'failure' &&
       needs.SidecarDockerBuild.result != 'failure' &&
       github.ref != 'refs/heads/master'
