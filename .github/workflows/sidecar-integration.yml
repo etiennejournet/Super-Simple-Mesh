@@ -2,11 +2,29 @@ on:
   push:
     branch:
     - 'master'
-    paths:
-    - 'docker/sidecar/*'
-name: Sidecar Integration
+
+name: Build Project
 jobs:
-  DockerBuild:
+  DetectFilesChanges:
+    runs-on: ubuntu-20.04
+    outputs:
+      sidecar_changes: ${{ steps.changed-files-sidecar.outputs.any_changed }}
+      controller_changes: ${{ steps.changed-files-controller.outputs.any_changed }}
+    steps:
+    - name: Get changes in controller
+      id: changed-files-controller
+      uses: tj-actions/changed-files@v1.1.2
+      with:
+        path: controller
+    - name: Get changes in sidecar
+      id: changed-files-sidecar
+      uses: tj-actions/changed-files@v1.1.2
+      with:
+        path: docker/sidecar/
+
+  SidecarIntegration:
+    needs: DetectFilesChanges
+    if:  ${{ needs.DetectFilesChanges.sidecar_changes }}
     env:
       IMAGE_NAME: "ssm-sidecar"
     runs-on: ubuntu-20.04
@@ -44,3 +62,60 @@ jobs:
         context: './docker/sidecar'
         tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
         push: true
+
+  UnitTests:
+    needs: DetectFilesChanges
+    if : ${{ github.ref != 'refs/heads/master' }} || ${{ needs.DetectFilesChanges.controller_changes }}
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Test
+      run: |
+        cd controller && go test ./...
+
+  DockerBuild:
+    needs: DetectFilesChanges
+    if:  ${{ needs.DetectFilesChanges.controller_changes }}
+    env:
+      IMAGE_NAME: "ssm-injector"
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and Push Release Candidate
+      if : github.ref != 'refs/heads/master'
+      uses: docker/build-push-action@v2
+      with:
+        context: './controller'
+        push: true
+        tags:
+        - '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}'
+        - 'dev-latest'
+    - name: Compute Docker Tag
+      id: docker_tag
+      uses: ./.github/actions/compute-docker-tag
+      with:
+        docker_context: './controller'
+        image_name: ${{ env.IMAGE_NAME }}
+        docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
+    - name: Release Tagged Version
+      if : github.ref == 'refs/heads/master'
+      uses: docker/build-push-action@v2
+      with:
+        context: './controller'
+        push: true
+        tags: '${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.docker_tag.outputs.docker_tag }}'
