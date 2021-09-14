@@ -28,7 +28,7 @@ jobs:
 
   SidecarIntegration:
     needs: DetectFilesChanges
-    if:  ${{ needs.DetectFilesChanges.sidecar_changes }}
+    if:  needs.DetectFilesChanges.sidecar_changes
     env:
       IMAGE_NAME: "ssm-sidecar"
     runs-on: ubuntu-20.04
@@ -84,7 +84,7 @@ jobs:
 
   ControllerDockerBuild:
     needs: DetectFilesChanges
-    if:  ${{ needs.DetectFilesChanges.controller_changes }}
+    if:  needs.DetectFilesChanges.controller_changes
     env:
       IMAGE_NAME: "ssm-injector"
     runs-on: ubuntu-20.04
@@ -127,9 +127,11 @@ jobs:
   EndToEndTesting:
     needs:
     - SidecarIntegration
-    - ControllerUnitTests
     - ControllerDockerBuild
-    if : github.ref != 'refs/heads/master'
+    if : |
+      needs.ControllerDockerBuild.result != 'failure' &&
+      needs.SidecarDockerBuild.result != 'failure' &&
+      github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
