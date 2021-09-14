@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
     - name: Get changes in controller
       id: changed-files-controller
       uses: tj-actions/changed-files@v1.1.2
