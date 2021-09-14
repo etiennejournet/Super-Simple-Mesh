@@ -13,12 +13,9 @@ helm repo update
 helm upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true -n super-simple-mesh --wait
 
 ## Setup SSM
-kubectl apply -f ../deploy/manifest
+kubectl kustomize --load-restrictor LoadRestrictionsNone . |kubectl apply -f -
 
 ## Setup ClusterIssuer
 kubectl apply -f ./manifest/clusterissuer.yml
 
 go test -v
-
-## Delete Manifest for local testing
-kubectl delete -f ../deploy/manifest

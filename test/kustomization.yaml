@@ -1,0 +1,10 @@
+resources:
+- ../deploy/manifest/clusterrolebinding.yaml
+- ../deploy/manifest/clusterrole.yaml
+- ../deploy/manifest/mutatingwebhook.yaml
+- ../deploy/manifest/serviceaccount.yaml
+- ../deploy/manifest/service.yaml
+- ../deploy/manifest/ssm-injector.yaml
+images:
+- name: etiennejournet/ssm-injector
+  newTag: dev-latest
