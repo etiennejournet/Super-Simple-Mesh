@@ -53,7 +53,7 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}
-          dev-latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:dev-latest
     - name: Compute Docker Tag
       id: docker_tag
       uses: ./.github/actions/compute-docker-tag
@@ -110,7 +110,7 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:rc-${{ github.run_id }}
-          dev-latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:dev-latest
     - name: Compute Docker Tag
       id: docker_tag
       uses: ./.github/actions/compute-docker-tag
