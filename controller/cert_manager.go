@@ -53,10 +53,10 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 	}
 
 	// Define the Certificate and Key Path
-  //	certPath := podTemplate.Annotations["cert-manager.ssm.io/cert-path"]
-  //	if certPath == "" {
-  //		certPath = defaultCertificatesPath
-  //	}
+	//	certPath := podTemplate.Annotations["cert-manager.ssm.io/cert-path"]
+	//	if certPath == "" {
+	//		certPath = defaultCertificatesPath
+	//	}
 
 	// Define the Certificate Duration
 	certDuration := podTemplate.Annotations["cert-manager.ssm.io/cert-duration"]
