@@ -19,12 +19,12 @@ jobs:
       id: changed-files-controller
       uses: tj-actions/changed-files@v1.1.2
       with:
-        path: controller
+        files: controller
     - name: Get changes in sidecar
       id: changed-files-sidecar
       uses: tj-actions/changed-files@v1.1.2
       with:
-        path: docker/sidecar/
+        files: docker/sidecar/
 
   SidecarIntegration:
     needs: DetectFilesChanges
