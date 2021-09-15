@@ -28,7 +28,7 @@ jobs:
 
   SidecarIntegration:
     needs: DetectFilesChanges
-    if:  needs.DetectFilesChanges.outputs.sidecar_changes
+    if:  needs.DetectFilesChanges.outputs.sidecar_changes == 'true'
     env:
       IMAGE_NAME: "ssm-sidecar"
     runs-on: ubuntu-20.04
@@ -84,7 +84,7 @@ jobs:
 
   ControllerDockerBuild:
     needs: DetectFilesChanges
-    if:  needs.DetectFilesChanges.outputs.controller_changes
+    if:  needs.DetectFilesChanges.outputs.controller_changes == 'true'
     env:
       IMAGE_NAME: "ssm-injector"
     runs-on: ubuntu-20.04
