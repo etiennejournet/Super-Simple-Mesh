@@ -132,8 +132,8 @@ jobs:
     - ControllerDockerBuild
     if : |
       always() &&
-      (needs.ControllerDockerBuild.result != 'failure' || needs.SidecarDockerBuild.result != 'failure') &&
-      !(needs.SidecarDockerBuild.result != 'failure' && needs.ControllerDockerBuild.result != 'failure') &&
+      (needs.ControllerDockerBuild.result != 'failure' && needs.SidecarDockerBuild.result != 'failure') &&
+      !(needs.SidecarDockerBuild.result == 'skipped' && needs.ControllerDockerBuild.result == 'skipped') &&
       github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
