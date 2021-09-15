@@ -8,8 +8,8 @@ jobs:
   DetectFilesChanges:
     runs-on: ubuntu-20.04
     outputs:
-      sidecar_changes: ${{ steps.changed-files-sidecar.outputs.any_changed }}
-      controller_changes: ${{ steps.changed-files-controller.outputs.any_changed }}
+      sidecar_changes: ${{ steps.changed-files-sidecar.outputs.only_changed }}
+      controller_changes: ${{ steps.changed-files-controller.outputs.only_changed }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
