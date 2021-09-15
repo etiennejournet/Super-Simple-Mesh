@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+      annotations:
+        cert-manager.ssm.io/service-name: "nginx.default.svc.cluster.local"
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: default
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-different-port
+  name: nginx-different-port
+  namespace: default
+spec:
+  ports:
+  - name: 80-80
+    port: 8000
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx

@@ -199,7 +199,7 @@ func TestGetPodTemplateFromAdmissionRequest(t *testing.T) {
 		Namespace: "test-namespace",
 		Object:    testObjectRawExtension,
 	}
-	podTemplate, err = getPodTemplateFromAdmissionRequest(admissionRequestForOther)
+	_, err = getPodTemplateFromAdmissionRequest(admissionRequestForOther)
 
 	if err == nil {
 		t.Fatal("No error returned for incompatible replicaset")

@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-simple-mtls
+spec:
+  template:
+    metadata:
+      annotations:
+        cert-manager.ssm.io/service-name: "test"
+    spec:
+      containers:
+      - name: test-simple-mtls
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          kill_sidecar() {
+            echo "Kill sidecar"
+            envoy_proxy_pid=$(pgrep envoy);
+            if [ $1 == 0 ]
+            then
+              kill -INT $envoy_proxy_pid;
+            else
+              kill -9 $envoy_proxy_pid;
+            fi
+            exit $1
+          }
+          sleep 5;
+          echo "Test external connection";
+          wget -O/dev/null -T3 google.fr || kill_sidecar 1
+          echo "Test connection to nginx service on http port";
+          wget -O/dev/null -T3 nginx.default.svc.cluster.local || kill_sidecar 1
+          echo "Test connection to nginx service on 8000 port";
+          wget -O/dev/null -T3 nginx-different-port.default.svc.cluster.local:8000 || kill_sidecar 1
+          kill_sidecar 0
+        securityContext:
+          capabilities:
+            add:
+            - SYS_PTRACE
+      restartPolicy: Never
+      shareProcessNamespace: true
+  backoffLimit: 0
