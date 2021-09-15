@@ -128,11 +128,10 @@ jobs:
     needs:
     - SidecarIntegration
     - ControllerDockerBuild
-    - ControllerUnitTests
     if : |
       always() &&
-      needs.ControllerDockerBuild.result != 'failure' &&
-      needs.SidecarDockerBuild.result != 'failure' &&
+      (needs.ControllerDockerBuild.result != 'failure' || needs.SidecarDockerBuild.result != 'failure') &&
+      !(needs.SidecarDockerBuild.result != 'failure' && needs.ControllerDockerBuild.result != 'failure') &&
       github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
