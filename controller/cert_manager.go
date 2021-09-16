@@ -33,7 +33,7 @@ const (
 	defaultCertRenewalPeriod = "20h"
 )
 
-func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
+func newCertManagerMutationConfig(wh webHookInterface, objectName string, objectNamespace string, podTemplate *v1.PodTemplateSpec) (*certManagerMutationConfig, error) {
 	if objectName == "" || objectNamespace == "" {
 		err := errors.New("unable to read object or namespace names from admission request")
 		return &certManagerMutationConfig{}, err
@@ -70,7 +70,7 @@ func newCertManagerMutationConfig(wh webHookInterface, objectName string, object
 	return &certManagerMutationConfig{
 		ObjectName:      objectName,
 		ObjectNamespace: objectNamespace,
-		PodTemplate:     &podTemplate,
+		PodTemplate:     podTemplate,
 		Certificate: &certmanager.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      objectName,

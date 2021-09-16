@@ -73,7 +73,7 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 			RestConfig:        &rest.Config{},
 		},
 	}
-	podTemplateSpec := corev1.PodTemplateSpec{
+	podTemplateSpec := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 	}
 	_, err := newCertManagerMutationConfig(whTest, "my-test-object", "my-test-namespace", podTemplateSpec)
@@ -88,7 +88,7 @@ func TestNewCertManagerMutationConfig(t *testing.T) {
 			RestConfig: &rest.Config{},
 		},
 	}
-	podTemplateSpec = corev1.PodTemplateSpec{
+	podTemplateSpec = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-pod-template",
 		},
@@ -121,7 +121,7 @@ func TestNewCreateCertificateRequest(t *testing.T) {
 			RestConfig:        &rest.Config{},
 		},
 	}
-	podTemplateSpec := corev1.PodTemplateSpec{
+	podTemplateSpec := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 	}
 
@@ -142,7 +142,7 @@ func TestNewCreateCertificateRequest(t *testing.T) {
 			RestConfig:        &rest.Config{},
 		},
 	}
-	podTemplateSpec = corev1.PodTemplateSpec{
+	podTemplateSpec = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 	}
 
@@ -163,7 +163,7 @@ func TestNewCreateCertificateRequest(t *testing.T) {
 			CertManagerIssuer: "test-issuer",
 		},
 	}
-	podTemplateSpec = corev1.PodTemplateSpec{
+	podTemplateSpec = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 	}
 
@@ -230,7 +230,7 @@ func TestCreateJSONPatch(t *testing.T) {
 			CertManagerIssuer: "test-issuer",
 		},
 	}
-	podTemplateSpec := corev1.PodTemplateSpec{
+	podTemplateSpec := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 	}
 
@@ -244,7 +244,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Number of patches on empty object should be 4")
 	}
 
-	podTemplateSpecWithVolumes := corev1.PodTemplateSpec{
+	podTemplateSpecWithVolumes := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			Volumes: []corev1.Volume{{
@@ -262,7 +262,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Problem in patch type for Volumes, should be add")
 	}
 
-	podTemplateSpecWithVolumes = corev1.PodTemplateSpec{
+	podTemplateSpecWithVolumes = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			Volumes: []corev1.Volume{{
@@ -279,7 +279,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Problem in patch type for Volumes, should be replace")
 	}
 
-	podTemplateSpecWithInitContainer := corev1.PodTemplateSpec{
+	podTemplateSpecWithInitContainer := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			InitContainers: []corev1.Container{{
@@ -296,7 +296,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Problem in patch type for InitContainer, should be add")
 	}
 
-	podTemplateSpecWithInitContainer = corev1.PodTemplateSpec{
+	podTemplateSpecWithInitContainer = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			InitContainers: []corev1.Container{{
@@ -313,7 +313,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Problem in patch type for InitContainer, should be replace")
 	}
 
-	podTemplateSpecWithSidecarContainer := corev1.PodTemplateSpec{
+	podTemplateSpecWithSidecarContainer := &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
@@ -330,7 +330,7 @@ func TestCreateJSONPatch(t *testing.T) {
 		t.Fatal("Problem in patch type for SidecarContainer, should be add")
 	}
 
-	podTemplateSpecWithSidecarContainer = corev1.PodTemplateSpec{
+	podTemplateSpecWithSidecarContainer = &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-pod-template"},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
