@@ -18,7 +18,7 @@ func TestGetCurrentNamespace(t *testing.T) {
 		t.Fatal(err)
 	}
 	if ns != "test" {
-		t.Fatal("Didn't found proper namespace name")
+		t.Fatal("Didn't found proper namespace name. Found: ", ns)
 	}
 }
 

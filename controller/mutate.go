@@ -28,7 +28,7 @@ func parseAndResolveInjectionDemand(admissionReviewBody []byte, wh webHookInterf
 			wh,
 			admissionReview.Request.Name,
 			admissionReview.Request.Namespace,
-			podTemplate,
+			&podTemplate,
 		)
 		if err == nil {
 			patch = mutationConfig.createJSONPatch()

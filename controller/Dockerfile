@@ -4,7 +4,7 @@ COPY . .
 RUN go install -v ./...
 
 FROM alpine:3.13
-LABEL TAG=0.4.0
+LABEL TAG=0.4.1
 ARG BIN_PATH=/usr/local/bin/
 COPY --from=builder /go/bin/ $BIN_PATH
 
