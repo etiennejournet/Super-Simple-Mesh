@@ -3,7 +3,8 @@ on:
     branch:
     - 'master'
 
-name: Test Actions By URL
+
+name: Build Project
 jobs:
   Test:
     runs-on: ubuntu-20.04
@@ -12,10 +13,6 @@ jobs:
       uses: https://github.com/Azure/setup-helm@v1
       with:
         version: v3.4.0
-
-
-name: Build Project
-jobs:
   DetectFilesChanges:
     runs-on: ubuntu-20.04
     outputs:
