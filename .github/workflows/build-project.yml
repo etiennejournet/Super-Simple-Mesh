@@ -1,7 +1,10 @@
 on:
   push:
     branches:
-    - 'master'
+    - 'main'
+
+on:
+  pull_request:
 
 
 name: Build Project
