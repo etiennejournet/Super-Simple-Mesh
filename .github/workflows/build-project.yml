@@ -1,10 +1,20 @@
 on:
   push:
-    branch:
-    - 'master'
+    branches:
+    - 'main'
+  pull_request:
+    branches:
+    - 'main'
 
 name: Build Project
 jobs:
+  Test:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install Helm
+      uses: https://github.com/Azure/setup-helm@v1
+      with:
+        version: v3.4.0
   DetectFilesChanges:
     runs-on: ubuntu-20.04
     outputs:
@@ -45,7 +55,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and push release Candidate
-      if : ${{ github.ref != 'refs/heads/master' }}
+      if : ${{ github.ref != 'refs/heads/main' }}
       id: docker_build
       uses: docker/build-push-action@v2
       with:
@@ -62,7 +72,7 @@ jobs:
         image_name: ${{ env.IMAGE_NAME }}
         docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Release Tagged Version
-      if : ${{ github.ref == 'refs/heads/master' }}
+      if : ${{ github.ref == 'refs/heads/main' }}
       uses: docker/build-push-action@v2
       with:
         context: './docker/sidecar'
@@ -71,7 +81,7 @@ jobs:
 
   ControllerUnitTests:
     needs: DetectFilesChanges
-    if : github.ref != 'refs/heads/master' && needs.DetectFilesChanges.outputs.controller_changes == 'true'
+    if : github.ref != 'refs/heads/main' && needs.DetectFilesChanges.outputs.controller_changes == 'true'
     runs-on: ubuntu-20.04
     steps:
     - name: Install Go
@@ -102,7 +112,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and Push Release Candidate
-      if : github.ref != 'refs/heads/master'
+      if : github.ref != 'refs/heads/main'
       uses: docker/build-push-action@v2
       with:
         context: './controller'
@@ -118,7 +128,7 @@ jobs:
         image_name: ${{ env.IMAGE_NAME }}
         docker_repo: ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Release Tagged Version
-      if : github.ref == 'refs/heads/master'
+      if : github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v2
       with:
         context: './controller'
@@ -133,7 +143,7 @@ jobs:
       always() &&
       (needs.ControllerDockerBuild.result != 'failure' && needs.SidecarDockerBuild.result != 'failure') &&
       !(needs.SidecarDockerBuild.result == 'skipped' && needs.ControllerDockerBuild.result == 'skipped') &&
-      github.ref != 'refs/heads/master'
+      github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
